@@ -1,13 +1,14 @@
 from datetime import datetime
 from typing import List
 from pydantic import BaseModel
+from bson import ObjectId
 
 
 class GuardBaseSchema(BaseModel):
     name: str
     role: str = None  # 'admin' or 'guest'
-    schedule_id: str
-    shifts: List[str] = []
+    schedule_id: ObjectId
+    shifts: List[ObjectId] = []
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -25,7 +26,7 @@ class GuardResponse(BaseModel):
     status: str
 
 
-class AllGuardsResponse(BaseModel):
+class ListGuardsResponse(BaseModel):
     guards: List[GuardBaseSchema] = []
 
 

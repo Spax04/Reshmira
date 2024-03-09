@@ -5,7 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from pydantic import BaseModel
 from bson.objectid import ObjectId
 
-from app.serializers.user_serializer import user_entity
+from app.serializers.guard_serializer import guard_entity
 
 from .database import Guard
 from .config import settings
@@ -41,7 +41,7 @@ def require_user(Authorize: AuthJWT = Depends()):
     try:
         Authorize.jwt_required()
         guard_id = Authorize.get_jwt_subject()
-        guard = user_entity(Guard.find_one({'_id': ObjectId(str(guard_id))}))
+        guard = guard_entity(Guard.find_one({'_id': ObjectId(str(guard_id))}))
 
         if not guard:
             raise GuardNotFound('Guard no longer exist')

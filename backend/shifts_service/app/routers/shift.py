@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends
 from bson.objectid import ObjectId
-from app.serializers.user_serializer import user_response_entity
-
-from app.database import Guard
+from app.serializers.shift_serializer import shifts_list_entity
+from app.schemas import shift_schemas
+from app.database import Shift
 from .. import oauth2
 from app.schemas.shift_schemas import ShiftBaseSchema
 
 router = APIRouter()
 
 
-@router.get('/me', response_model=schemas.GuardResponse)
-def get_me(user_id: str = Depends(oauth2.require_user)):
-    user = user_response_entity(User.find_one({'_id': ObjectId(str(user_id))}))
-    return {"status": "success", "user": user}
+@router.get('/schedule-shifts', response_model=shift_schemas.ListShiftsResponse)
+def get_me(schedule: shift_schemas.ListShiftsRequest = Depends(oauth2.require_user())):
+    shifts = shifts_list_entity(Shift.find({'schedule_id': ObjectId(str(schedule.schedule_id))}))
+    return {"status": "success", "shifts": shifts}
 

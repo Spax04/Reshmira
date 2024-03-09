@@ -23,3 +23,4 @@ def validate_access_token(response: Response, Authorize: AuthJWT = Depends()):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Invalid or expired access token'
         )
+

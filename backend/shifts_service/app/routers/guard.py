@@ -4,7 +4,7 @@ from fastapi import APIRouter, Response, status, Depends, HTTPException
 
 from app import oauth2
 from app.database import Guard
-from app.serializers.user_serializer import user_entity, user_response_entity
+from app.serializers.guard_serializer import guard_entity, guard_response_entity,guard_list_entity
 from app.schemas import guard_schemas
 from app.oauth2 import AuthJWT
 from ..config import settings
@@ -31,8 +31,8 @@ async def create_guard(payload: guard_schemas.CreateGuardSchema):
     return {"status": "success"}
 
 
-@router.get('/schedule-guards', status_code=status.HTTP_201_CREATED, response_model=guard_schemas.AllGuardsResponse)
+@router.get('/schedule-guards', status_code=status.HTTP_201_CREATED, response_model=guard_schemas.ListGuardsResponse)
 async def get_guards_by_schedule_id(payload: guard_schemas.AllGuardsRequest):
     guards = Guard.find({'schedule_id': payload.schedule_id})
 
-    return {"status": "success", "guards": guards}
+    return {"status": "success", "guards": guard_list_entity(guards)}
