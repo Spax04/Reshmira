@@ -13,7 +13,7 @@ const userSchema = new Schema({
   },
   password: { type: String, required: true },
   confirmed: { type: Boolean, default: false }, 
-  role: { type: String, enum: ['admin', 'guest'], default: 'guest' },
+  role: { type: String, enum: ['admin', 'guest','none'], default: 'none' },
   schedule_id: { type: String, required: false },
   shifts: [{ type: String }],
   created_at: { type: Date, default: Date.now },

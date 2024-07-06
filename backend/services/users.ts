@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { User, UserModel, UserWithId } from '../models/user'
+import { User, UserModel, UserWithId } from '../db/models/user'
 
 const createUser = async (userData: User) => {
   try {
