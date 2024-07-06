@@ -1,11 +1,12 @@
 #dependencies
 node_modules
-env
+
 / .pnp
 .pnp.js
 
 # env
-.env
+env/.env.development
+env/.env.production
 
 # testing
 /coverage
