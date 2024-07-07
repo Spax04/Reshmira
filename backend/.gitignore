@@ -5,5 +5,5 @@ package-lock.json
 /dist
 .idea
 App/appLocal.ts
-env
+/env
 
