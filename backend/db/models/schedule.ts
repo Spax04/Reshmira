@@ -1,17 +1,24 @@
-import mongoose, { Schema, InferSchemaType, model } from 'mongoose';
+import mongoose, { Schema, InferSchemaType, model } from 'mongoose'
 
-const scheduleSchema = new Schema({
+const ScheduleSchema = new Schema(
+  {
     name: { type: String, required: true },
-    guards: [{ type: mongoose.Types.ObjectId, ref: 'User' }], 
-    shifts: [{ type: mongoose.Types.ObjectId, ref: 'Shift' }], 
+    guards: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    shifts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shift' }],
+    guards_pre_shift: { type: Number, required: true },
     positions: [{ type: String, required: true }],
-    shift_time: { type: Number, required: true }, 
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now }
-});
+    shift_time: { type: Number, required: true }
+  },
+  {
+    timestamps: true // This adds `createdAt` and `updatedAt` fields automatically
+  }
+)
 
-type Schedule = InferSchemaType<typeof scheduleSchema>;
-type ScheduleWithId = { _id: mongoose.Types.ObjectId } & Schedule;
-const scheduleModel = model("Schedule", scheduleSchema);
+type Schedule = InferSchemaType<typeof ScheduleSchema> & {
+  createdAt?: Date // Make these fields optional
+  updatedAt?: Date // Make these fields optional
+}
+type ScheduleWithId = { _id: mongoose.Types.ObjectId } & Schedule
+const ScheduleModel = model('Schedule', ScheduleSchema)
 
-export { Schedule, ScheduleWithId, scheduleModel, scheduleSchema };
+export { Schedule, ScheduleWithId, ScheduleModel, ScheduleSchema }

@@ -1,18 +1,37 @@
 //import { clean, createToken } from '../../common';
 const moment = require('moment-timezone')
 import mongoose from 'mongoose'
-import { User, UserModel, UserWithId } from '../../db/models/user'
+import { Room, RoomModel, RoomWithId } from '../../db/models/room'
+import { generateRoomCode } from '../../utils/intex'
 
 export class RoomService {
-  createUser = async (userData: User) => {
+  createRoom = async (adminId: string) => {
     try {
       await mongoose.connect(process.env.DATABASE_URL as string)
 
-      if (!UserModel.collection) {
-        await UserModel.createCollection()
+      if (!RoomModel.collection) {
+        await RoomModel.createCollection()
       }
 
-      const data = await UserModel.create(userData)
+      let secret = await generateRoomCode()
+
+      let response = await this.getRoomBySecret(secret)
+
+      while (!response.success) {
+        secret = await generateRoomCode()
+        response = await this.getRoomBySecret(secret)
+      }
+
+      const newRoom: Room = {
+        secret: secret,
+        users: [],
+        adminId: new mongoose.Types.ObjectId(adminId),
+        shifts: [],
+        created_at: new Date(),
+        updated_at: new Date(),
+        schedule_id: null
+      }
+      const data = await RoomModel.create(newRoom)
       await mongoose.disconnect()
 
       return { success: true, data, msg: 'login OK' }
@@ -30,19 +49,19 @@ export class RoomService {
         throw new Error('MongoDB is not connected')
       }
 
-      const data = await UserModel.findById(id).exec()
+      const data = await RoomModel.findById(id).exec()
       if (data != null) {
-        return { success: true, data, msg: 'user retrived by id' }
+        return { success: true, data, msg: 'Room retrived by id' }
       } else {
-        throw 'User not exist'
+        throw 'Room does not exist'
       }
     } catch (error) {
-      console.error('Error in getUser:', error)
+      console.error('Error in getRoomById:', error)
       throw error // Re-throw the error for handling in caller function
     }
   }
 
-  getUserByEmail = async (email: String) => {
+  getRoomBySecret = async (secret: String) => {
     try {
       // Ensure Mongoose is connected
       await mongoose.connect(process.env.DATABASE_URL as string)
@@ -51,54 +70,69 @@ export class RoomService {
         throw new Error('MongoDB is not connected')
       }
 
-      const data = await UserModel.findOne({ email: email }).exec()
-      return { success: true, data, msg: 'user retrived by email' }
+      const data: RoomWithId = await RoomModel.findOne({
+        secret: secret
+      }).exec()
+      return { success: true, data, msg: 'Room retrived by secret' }
     } catch (error) {
-      console.error('Error in getUser:', error)
-      throw error // Re-throw the error for handling in caller function
+      console.error('Error in getUserBySecret:', error)
+      return { success: false, msg: 'Room with provided secret does not exist' }
     }
   }
 
-  updateUser = (
+  updateRoom = async (
     id: mongoose.Types.ObjectId,
-    updatedUserData: Partial<User>
-  ) => {
-    return new Promise<UserWithId>((resolve, reject) => {
-      mongoose
-        .connect(process.env.DATABASE_URL as string)
-        .then(async () => {
-          try {
-            const updatedUser = await UserModel.findByIdAndUpdate(
-              id,
-              updatedUserData,
-              { new: true }
-            )
-            if (!updatedUser) {
-              reject('User not found')
-            }
-            resolve(updatedUser as UserWithId)
-          } catch (err) {
-            reject(err)
-          }
-        })
-        .catch(err => {
-          reject(err)
-        })
-    })
+    updatedRoomData: Partial<Room>
+  ): Promise<any> => {
+    try {
+      await mongoose.connect(process.env.DATABASE_URL as string)
+
+      const updatedRoom = await RoomModel.findByIdAndUpdate(
+        id,
+        updatedRoomData,
+        { new: true }
+      ).exec()
+
+      
+
+      await mongoose.disconnect()
+      return {
+        success: true,
+        data: updatedRoom as RoomWithId,
+        msg: 'Room was updated successfuly'
+      }
+    } catch (err) {
+      console.error('Error in updateRoom:', err)
+      return {
+        success: false,
+        msg: 'Running in problem on user update: ' + err
+      }
+    }
   }
 
-  deleteUser = (id: mongoose.Types.ObjectId) => {
-    return new Promise<void>(async (resolve, reject) => {
-      mongoose.connect(process.env.DATABASE_URL as string).then(async () => {
-        await UserModel.findByIdAndDelete(id)
-          .exec()
-          .catch(err => {
-            if (err) {
-              reject(err)
-            }
-          })
-        resolve()
-      })
-    })
+  deleteRoom = async (id: mongoose.Types.ObjectId): Promise<any> => {
+    try {
+      await mongoose.connect(process.env.DATABASE_URL as string)
+
+      const deletedRoom = await RoomModel.findByIdAndDelete(id).exec()
+
+      if (!deletedRoom) {
+        return {
+          success: false,
+          msg: 'Room not found'
+        }
+      }
+
+      await mongoose.disconnect()
+      return {
+        success: true,
+        msg: 'Room deleted successful'
+      }
+    } catch (err) {
+      return {
+        success: true,
+        msg: 'Running in problem in room delete: ' + err
+      }
+    }
   }
 }

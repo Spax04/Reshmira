@@ -12,10 +12,10 @@ const userSchema = new Schema({
     match: [emailRegex, 'Please provide a valid email address']
   },
   password: { type: String, required: true },
-  confirmed: { type: Boolean, default: false }, 
-  role: { type: String, enum: ['admin', 'guest','none'], default: 'none' },
-  schedule_id: { type: String, required: false },
-  shifts: [{ type: String }],
+  confirmed: { type: Boolean, default: false },
+  role: { type: String, enum: ['admin', 'guest', 'none'], default: 'none' },
+  schedule_id: { type: Schema.Types.ObjectId, ref: 'Schedule', required: false },
+  shifts: [{ type: Schema.Types.ObjectId, ref: 'Shift' }],
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 })

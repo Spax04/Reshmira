@@ -71,7 +71,7 @@ export async function signup (ctx: any): Promise<any> {
       password: hashedPassword,
       role: 'none', // or 'admin' depending on your logic
       confirmed: false,
-      schedule_id: '', // fill in with appropriate value
+      schedule_id: null, // fill in with appropriate value
       shifts: [], // or any default shifts
       created_at: new Date(),
       updated_at: new Date()
