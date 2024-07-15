@@ -2,7 +2,11 @@
 const moment = require('moment-timezone')
 import mongoose from 'mongoose'
 import { User, UserModel, UserWithId } from '../db/models/user'
-
+interface UpdateUserResponse {
+  success: boolean
+  data?: UserWithId | null
+  msg: string
+}
 export class UserDal {
   createUser = async (userData: User) => {
     try {
@@ -12,12 +16,12 @@ export class UserDal {
         await UserModel.createCollection()
       }
 
-      const data = await UserModel.create(userData)
+      const data : UserWithId = await UserModel.create(userData)
       await mongoose.disconnect()
 
-      return { success: true, data, msg: 'login OK' }
+      return { success: true, data, msg: `User with id  has been created` }
     } catch (error) {
-      throw error
+      return { success: false, msg: 'User creation error: ' + error }
     }
   }
 
@@ -51,7 +55,7 @@ export class UserDal {
         throw new Error('MongoDB is not connected')
       }
 
-      const data = await UserModel.findOne({ email: email }).exec()
+      const data: UserWithId = await UserModel.findOne({ email: email }).exec()
       return { success: true, data, msg: 'user retrived by email' }
     } catch (error) {
       console.error('Error in getUser:', error)
@@ -59,32 +63,35 @@ export class UserDal {
     }
   }
 
-  updateUser = (
+  updateUser = async (
     id: mongoose.Types.ObjectId,
-    updatedUserData: Partial<User>
-  ) => {
-    return new Promise<UserWithId>((resolve, reject) => {
-      mongoose
-        .connect(process.env.DATABASE_URL as string)
-        .then(async () => {
-          try {
-            const updatedUser = await UserModel.findByIdAndUpdate(
-              id,
-              updatedUserData,
-              { new: true }
-            )
-            if (!updatedUser) {
-              reject('User not found')
-            }
-            resolve(updatedUser as UserWithId)
-          } catch (err) {
-            reject(err)
-          }
-        })
-        .catch(err => {
-          reject(err)
-        })
-    })
+    updatedUserData: Partial<UserWithId>
+  ): Promise<UpdateUserResponse> => {
+    try {
+      await mongoose.connect(process.env.DATABASE_URL as string)
+
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        id,
+        updatedUserData,
+        {
+          new: true
+        }
+      )
+
+      if (!updatedUser) {
+        return { success: false, msg: 'User not found' }
+      }
+
+      return {
+        success: true,
+        data: updatedUser,
+        msg: `User, with id ${updatedUser._id}, has been updated`
+      }
+    } catch (err) {
+      return { success: false, msg: 'Error: ' + (err as Error).message }
+    } finally {
+      await mongoose.disconnect()
+    }
   }
 
   deleteUser = (id: mongoose.Types.ObjectId) => {

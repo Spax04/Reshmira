@@ -54,7 +54,7 @@ export async function createSchedule (ctx: any): Promise<any> {
     const fullSchedule = await new ScheduleService().generateNewSchedule(
       newScheduleResponse.data._id.toString(),
       guardsPreShift,
-      guards,
+      guardsIds,
       positions,
       shiftTime
     )

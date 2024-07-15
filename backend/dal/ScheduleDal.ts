@@ -31,11 +31,11 @@ export class ScheduleDal {
         throw new Error('MongoDB is not connected')
       }
 
-      const data = await ScheduleModel.findById(id).exec()
+      const data : Partial<ScheduleWithId> = await ScheduleModel.findById(id).exec()
       if (data != null) {
-        return { success: true, data, msg: 'user retrived by id' }
+        return { success: true, data, msg: 'Schedule retrived by id' }
       } else {
-        throw 'User not exist'
+        throw 'Schedule not exist'
       }
     } catch (error) {
       console.error('Error in getUser:', error)

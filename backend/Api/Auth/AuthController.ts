@@ -8,6 +8,7 @@ import {
 import * as bcrypt from 'bcryptjs'
 import { User } from '../../db/models/user'
 import * as jwt from 'jsonwebtoken'
+import { UserDal } from '../../dal/UserDal'
 
 export const AuthController = (router: any) => {
   router.post('/auth/login', bodyParser(), login)
@@ -18,83 +19,94 @@ export const AuthController = (router: any) => {
 export async function login (ctx: any): Promise<any> {
   try {
     const { email, password } = ctx.request.body
-    const { success, msg, data } = await new AuthService().getUserByEmail(email)
+    const { success, msg, data } = await new UserDal().getUserByEmail(email)
 
     if (success) {
-      if (data) {
-        if (!data.confirmed) {
-          ctx.body = JSON.stringify({
-            success: false,
-            msg: 'Email is not confirmed'
-          })
-          ctx.status = 401
-        }
-        if (bcrypt.compareSync(password, data.password)) {
-          const accessToken = await generateAccessToken(data)
-          const refreshToken = await generateRefreshToken(data)
-          ctx.body = JSON.stringify({
-            success: true,
-            msg: 'Seccess login',
-            data: {
-              accessToken: accessToken,
-              refreshToken: refreshToken
-            }
-          })
-          ctx.status = 200
-          return
-        }
+      if (!data.confirmed) {
+        ctx.body = JSON.stringify({
+          success: false,
+          msg: 'Email is not confirmed'
+        })
+        ctx.status = 401
       }
+
+      const authenticateResponse = await new AuthService().authenticate(
+        password,
+        data
+      )
+
+      if (!authenticateResponse.success) {
+        ctx.body = JSON.stringify({
+          success: false,
+          msg: authenticateResponse.msg
+        })
+        ctx.status = 500
+        return
+      } else {
+        ctx.body = JSON.stringify({
+          success: true,
+          msg: authenticateResponse.msg,
+          data: authenticateResponse.data
+        })
+        ctx.status = 200
+        return
+      }
+    } else {
       ctx.body = JSON.stringify({
         success: false,
-        msg: 'Invalide credentials'
+        msg: msg
       })
-      ctx.status = 401
+      ctx.status = 404
     }
   } catch (err) {
     console.error('Error in Sign In', err)
     ctx.body = JSON.stringify({
       success: false,
-      msg: 'User with this email does not exist'
+      msg: 'User with this email does not exist: ' + err
     })
-    ctx.status = 404
+    ctx.status = 500
   }
 }
 
 export async function signup (ctx: any): Promise<any> {
   try {
-    const saltRounds = 12
     const { email, password } = ctx.request.body
-    const hashedPassword = await bcrypt.hash(password, saltRounds)
 
-    const newUser: User = {
-      email: email,
-      password: hashedPassword,
-      role: 'none', // or 'admin' depending on your logic
-      confirmed: false,
-      schedule_id: null, // fill in with appropriate value
-      shifts: [], // or any default shifts
-      created_at: new Date(),
-      updated_at: new Date()
+    const createdUserResponse = await new AuthService().registrateNewUser(
+      email,
+      password
+    )
+    if (!createdUserResponse.success) {
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: createdUserResponse.msg
+      })
+      ctx.status = 403
     }
 
-    const createdUserResponse = await new AuthService().createUser(newUser)
-
-    if (createdUserResponse.success) {
-    }
-    // await res.send({
-    //   accessToken: generateToken(createdUser),
-    //   refreshToken: generateRefreshToken(createdUser)
-    // })
     const varificationLink = `${
       process.env.BASE_URL
     }/auth/varify-email/${generateAccessToken(createdUserResponse.data)}`
-    await sendConfirmEmail(email, 'Verify email', varificationLink)
+    const sendVarificationEmailResponse =
+      await new AuthService().sendConfirmEmail(
+        email,
+        'Verify email',
+        varificationLink
+      )
 
-    ctx.body = JSON.stringify({
-      success: true,
-      msg: 'Verify your email'
-    })
-    ctx.status = 200
+    if (sendVarificationEmailResponse.success) {
+      ctx.body = JSON.stringify({
+        success: true,
+        msg: sendVarificationEmailResponse.msg
+      })
+      ctx.status = 200
+    } else {
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: sendVarificationEmailResponse.msg
+      })
+      ctx.status = 500
+    }
   } catch (err) {
     ctx.body = JSON.stringify({
       success: false,
@@ -105,48 +117,26 @@ export async function signup (ctx: any): Promise<any> {
 }
 
 export async function confirmEmail (ctx: any): Promise<any> {
-  console.log("in confirm")
+  console.log('in confirm')
   const { token } = ctx.request.params // Assuming token is passed as a URL parameter
-  console.log(token)
   try {
-    // Decode and verify the token
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET)
-    if (!decoded || !decoded._id) {
-      ctx.body = JSON.stringify({
-        success: false,
-        msg: 'Invalid token'
-      })
-      ctx.status = 400
-    }
+    const confirmResponse = await new AuthService().confirmValidationEmail(
+      token
+    )
 
-    // Find the user by userId from the token payload
-    const user = await new AuthService().getUserById(decoded._id)
-    if (!user.success) {
+    if (confirmResponse.success) {
       ctx.body = JSON.stringify({
-        success: false,
-        msg: 'User not found!'
+        success: true,
+        msg: confirmResponse.msg
       })
-      ctx.status = 404
-    } else {
-      user.data.confirmed = true
-    }
-
-    try {
-      await new AuthService().updateUser(decoded._id, user.data)
       ctx.status = 200
+    } else {
       ctx.body = JSON.stringify({
         success: false,
-        msg: 'Email verification successful '
+        msg: confirmResponse.msg
       })
-    } catch (err) {
-      ctx.status = 500
-      ctx.body = JSON.stringify({
-        success: false,
-        msg: 'Internal server error: ' + err.message
-      })
+      ctx.status = confirmResponse.code
     }
-
-    // Optionally, you can respond with a success message or redirect to a success page
   } catch (err) {
     console.error('Error in Email Verification', err)
     ctx.status = 500

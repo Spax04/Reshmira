@@ -14,7 +14,7 @@ export class ShiftDal {
         await ShiftModel.createCollection()
       }
 
-      const data = await ShiftModel.create(newShift)
+      const data : ShiftWithId = await ShiftModel.create(newShift)
       await mongoose.disconnect()
 
       return { success: true, data, msg: 'Schedule has been created' }

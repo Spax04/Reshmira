@@ -8,22 +8,22 @@ import {
 } from '../../db/models/schedule'
 import { Shift, GuardAssignment } from '../../db/models/shift'
 import { ScheduleDal } from '../../dal/ScheduleDal'
+import { ShiftDal } from '../../dal/ShiftDal'
 
 export class ScheduleService {
   generateNewSchedule = async (
     scheduleId: string,
     guardsPreShift: number,
-    guards: string[],
+    guards: mongoose.Types.ObjectId[],
     positions: { position_name: string; guards_pre_position: number }[],
     shiftTime: number // epoch format (seconds)
   ) => {
     try {
-      
       let currentDateEpoch = Math.floor(Date.now() / 1000)
       let twoWeeksFromNowEpoch = Math.floor(
         (Date.now() + 14 * 24 * 60 * 60 * 1000) / 1000
       )
-      const shifts: Shift[] = []
+      const shifts: mongoose.Types.ObjectId[] = []
       while (currentDateEpoch < twoWeeksFromNowEpoch) {
         const startDate = new Date(currentDateEpoch * 1000)
         const endDate = new Date((currentDateEpoch + shiftTime) * 1000)
@@ -34,10 +34,10 @@ export class ScheduleService {
         for (let i = 0; i < positions.length; i++) {
           let guardsIds: mongoose.Types.ObjectId[] = []
 
-          for (let j = 0; j < guardsPreShift; j++) {
+          for (let j = 0; j < positions[i].guards_pre_position; j++) {
             let guardId = guards.shift()
             if (guardId) {
-              guardsIds.push(new mongoose.Types.ObjectId(guardId))
+              guardsIds.push(guardId)
               guards.push(guardId)
             }
           }
@@ -55,13 +55,33 @@ export class ScheduleService {
           start_time: startDate,
           end_time: endDate,
           schedule_id: new mongoose.Types.ObjectId(scheduleId),
-          guard_posts: guardPosts // HERE IS AN ERROR
+          guard_posts: guardPosts
         }
 
-        shifts.push(newShift)
+        const savedShift = await new ShiftDal().createShift(newShift)
+
+        if (!savedShift.success) {
+          throw new Error('Error on saving new shift')
+        }
+
+        shifts.push(savedShift.data._id)
+        currentDateEpoch += shiftTime
       }
 
-      return { success: true, data, msg: 'Schedule has been created' }
+      const currentScheduleResponse = await new ScheduleDal().getScheduleById(
+        new mongoose.Types.ObjectId(scheduleId)
+      )
+      currentScheduleResponse.data.shifts = [...shifts]
+      const updatedSchedule = await new ScheduleDal().updateSchedule(
+        new mongoose.Types.ObjectId(scheduleId),
+        currentScheduleResponse.data
+      )
+
+      return {
+        success: true,
+        data: updatedSchedule,
+        msg: 'Schedule has been created'
+      }
     } catch (error) {
       throw error
     }
@@ -130,4 +150,6 @@ export class ScheduleService {
       })
     })
   }
+
+  
 }
