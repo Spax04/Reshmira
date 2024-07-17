@@ -70,11 +70,12 @@ export async function login (ctx: any): Promise<any> {
 
 export async function signup (ctx: any): Promise<any> {
   try {
-    const { email, password } = ctx.request.body
+    const { email, password,fullName } = ctx.request.body
 
     const createdUserResponse = await new AuthService().registrateNewUser(
       email,
-      password
+      password,
+      fullName
     )
     if (!createdUserResponse.success) {
       ctx.body = JSON.stringify({

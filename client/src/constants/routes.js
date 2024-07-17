@@ -1,4 +1,5 @@
 export default{
+    AUTH_STACK:'auth stack',
     LOGIN:'login',
     SIGNUP:'signup',
     FORGOT_PASSWORD:'forgot password',
@@ -6,5 +7,11 @@ export default{
     HOME:'home',
     HOME_DRAWER:'home drawer',
     USER_SHIFTS:'user shifts',
-    GROUP_SHIFTS:'group shifts'
+    GROUP_SHIFTS:'group shifts',
+    CALENDAR_SHIFTS: 'calendar shifts',
+
+    USER_STACK: 'user stack',
+    USER_PROFILE: 'user profile',
+
+    SETTINGS:'settings'
 }

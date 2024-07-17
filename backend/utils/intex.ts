@@ -6,7 +6,7 @@ import * as nodemailer from 'nodemailer'
 
 export const generateAccessToken = (user: UserWithId) => {
   return jwt.sign(
-    { _id: user._id }, // add _id: user._id
+    { _id: user._id, }, // add _id: user._id
     process.env.JWT_SECRET,
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
   )

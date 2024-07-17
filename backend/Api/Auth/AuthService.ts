@@ -53,12 +53,17 @@ export class AuthService {
     }
   }
 
-  registrateNewUser = async (email: string, password: string) => {
+  registrateNewUser = async (
+    email: string,
+    password: string,
+    fullName: string
+  ) => {
     const salt = await bcrypt.genSalt(Number(process.env.SALT_ROUNDS))
     const hashedPassword = await bcrypt.hash(password, salt)
 
     const createdUserResponse = await new UserDal().createUser({
       email: email,
+      full_name: fullName,
       password: hashedPassword,
       role: 'none', // or 'admin' depending on your logic
       confirmed: false,

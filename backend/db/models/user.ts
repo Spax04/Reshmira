@@ -12,6 +12,7 @@ const userSchema = new Schema(
       trim: true,
       match: [emailRegex, 'Please provide a valid email address']
     },
+    full_name: { type: String, required: true },
     password: { type: String, required: true },
     confirmed: { type: Boolean, default: false },
     role: { type: String, enum: ['admin', 'guest', 'none'], default: 'none' },
@@ -21,7 +22,7 @@ const userSchema = new Schema(
       required: false
     },
     shifts: [{ type: Schema.Types.ObjectId, ref: 'Shift' }],
-    refresh_token: { type: String,required:false }
+    refresh_token: { type: String, required: false }
   },
   {
     timestamps: true
