@@ -1,5 +1,4 @@
-import * as jwt from 'jsonwebtoken';
-
+import * as jwt from 'jsonwebtoken'
 
 // Middleware to check token presence
 export const tokenPresenceCheck = async (ctx: any, next: any) => {
@@ -14,20 +13,32 @@ export const tokenPresenceCheck = async (ctx: any, next: any) => {
 
 // Middleware to verify token structure and signature
 export const tokenValidatiionCheck = async (ctx: any, next: any) => {
-  const token = ctx.headers['authorization']?.split(' ')[1] // Assuming the token is in the form "Bearer <token>"
+  const authorizationHeader = ctx.headers['authorization'];
+
+  if (!authorizationHeader) {
+    ctx.status = 401;
+    ctx.body = { error: 'Authorization header not provided' };
+    return;
+  }
+
+  console.log(authorizationHeader)
+  const token = authorizationHeader.split(' ')[1];
+  console.log(`Extracted token: ${token}`);
+
   if (!token) {
-    ctx.status = 401
-    ctx.body = { error: 'Token not provided or malformed' }
-    return
+    ctx.status = 401;
+    ctx.body = { error: 'Token not provided or malformed' };
+    return;
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    ctx.state.user = decoded // You can store the decoded token in the state for further use
-    await next()
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(`Decoded token: ${JSON.stringify(decoded)}`);
+    await next();
   } catch (err) {
-    ctx.status = 401
-    ctx.body = { error: 'Invalid token' }
+    console.error(`Token verification error: ${err.message}`);
+    ctx.status = 401;
+    ctx.body = { error: 'Invalid token' };
   }
 }
 

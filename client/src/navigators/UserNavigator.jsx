@@ -2,7 +2,7 @@ import { View, Text } from 'react-native'
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
 import { ROUTES } from '../constants'
-import UserProfile from '../screens/Common/UserProfile'
+import UserProfile from '../screens/CommonScreens/UserProfile'
 
 const Stack = createStackNavigator()
 const UserNavigator = () => {

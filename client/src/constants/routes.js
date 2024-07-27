@@ -1,17 +1,22 @@
-export default{
-    AUTH_STACK:'auth stack',
-    LOGIN:'login',
-    SIGNUP:'signup',
-    FORGOT_PASSWORD:'forgot password',
+export default {
+  AUTH_STACK: 'auth stack',
+  LOGIN: 'login',
+  SIGNUP: 'signup',
+  FORGOT_PASSWORD: 'forgot password',
 
-    HOME:'home',
-    HOME_DRAWER:'home drawer',
-    USER_SHIFTS:'user shifts',
-    GROUP_SHIFTS:'group shifts',
-    CALENDAR_SHIFTS: 'calendar shifts',
+  HOME: 'home',
+  HOME_DRAWER: 'home drawer',
+  USER_SHIFTS: 'user shifts',
+  GROUP_SHIFTS: 'group shifts',
+  CALENDAR_SHIFTS: 'calendar shifts',
 
-    USER_STACK: 'user stack',
-    USER_PROFILE: 'user profile',
+  USER_STACK: 'user stack',
+  USER_PROFILE: 'user profile',
 
-    SETTINGS:'settings'
+  SETTINGS: 'settings',
+
+  LOBBY_ROOM: 'lobby room',
+  CREATE_ROOM: 'create room',
+  JOIN_ROOM: 'join room',
+  ROOM_STACK: 'room stack'
 }

@@ -6,7 +6,6 @@ const roomSchema = new Schema({
   users:  [{ type: Schema.Types.ObjectId, ref: 'User' }], 
   adminId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   schedule_id:  { type: Schema.Types.ObjectId, ref: 'Schedule' },
-  shifts:  [{ type: Schema.Types.ObjectId, ref: 'Shift' }],
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 })

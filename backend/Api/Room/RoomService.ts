@@ -26,7 +26,6 @@ export class RoomService {
         secret: secret,
         users: [],
         adminId: new mongoose.Types.ObjectId(adminId),
-        shifts: [],
         created_at: new Date(),
         updated_at: new Date(),
         schedule_id: null

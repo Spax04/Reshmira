@@ -1,12 +1,14 @@
-// import {
-//     applyMiddleware,
-//     combineReducers,
-//     configureStore
-//   } from '@reduxjs/toolkit'
+import {
+    applyMiddleware,
+    combineReducers,
+    configureStore
+  } from '@reduxjs/toolkit'
 
-//   export default configureStore({
-//     reducer: {
-//       user: userReducer,
-//     },
+  import userReducer from './reducers/userReducer'
 
-//   })
+  export default configureStore({
+    reducer: {
+      user: userReducer,
+    },
+
+  })

@@ -5,8 +5,15 @@ import { UserWithId } from '../db/models/user'
 import * as nodemailer from 'nodemailer'
 
 export const generateAccessToken = (user: UserWithId) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is not set')
+  }
+
+  if (!process.env.ACCESS_TOKEN_EXPIRES_IN) {
+    throw new Error('ACCESS_TOKEN_EXPIRES_IN environment variable is not set')
+  }
   return jwt.sign(
-    { _id: user._id, }, // add _id: user._id
+    { _id: user._id }, // add _id: user._id
     process.env.JWT_SECRET,
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
   )

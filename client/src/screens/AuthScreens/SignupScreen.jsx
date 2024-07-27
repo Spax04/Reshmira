@@ -4,21 +4,71 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  Image // Import Image component from react-native
 } from 'react-native'
-import { ROUTES } from '../../constants'
+import { COLORS, ROUTES, VARS } from '../../constants'
+
+// Import your logo image
+import LogoImage from '../../../assets/images/logo.png'
+import axios from 'axios'
 
 const SignupScreen = ({ navigation }) => {
-  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [msg, setMsg] = useState('')
+  const [infoMessage, setInfoMessage] = useState(false)
 
-  const handleSignup = () => {
-    // Handle signup functionality here
-    console.log('Signing up...')
-    console.log('Full Name:', fullName)
-    console.log('Email:', email)
-    console.log('Password:', password)
+  const handleSignup = async () => {
+    try {
+     
+      if (
+        fullName == '' ||
+        email == '' ||
+        password == '' ||
+        confirmPassword == ''
+      ) {
+        setInfoMessage(false)
+        setMsg('Please fill in all fields.')
+        return
+      }
+
+      if (password !== confirmPassword) {
+        setInfoMessage(false)
+        setMsg('Passwords do not match.')
+        return
+      }
+      console.log(VARS.API_URL)
+      const response = await axios.post(`${VARS.API_URL}/auth/signup`, {
+        email,
+        password,
+        fullName
+      })
+
+      if (!response.data.success) {
+        setInfoMessage(false)
+        setMsg(response.data.msg)
+      } else {
+        setInfoMessage(true)
+        setMsg(response.data.msg)
+      }
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.error('Server Error:', error.response.data);
+        setMsg('Server Error. Please try again later.');
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No Response:', error.request);
+        setMsg('No response from server. Please check your connection.');
+      } else {
+        // Something else happened in making the request
+        console.error('Error:', error.message);
+        setMsg('Error occurred while signing up.');
+      }
+    }
   }
 
   const goToLogin = () => {
@@ -27,32 +77,50 @@ const SignupScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Image source={LogoImage} style={styles.logo} />
+
       <Text style={styles.title}>Sign Up</Text>
       <TextInput
         style={styles.input}
-        placeholder='Full Name'
-        value={fullName}
+        placeholder='Full name'
         onChangeText={text => setFullName(text)}
       />
       <TextInput
         style={styles.input}
         placeholder='Email'
-        value={email}
         onChangeText={text => setEmail(text)}
       />
       <TextInput
         style={styles.input}
         placeholder='Password'
         secureTextEntry
-        value={password}
         onChangeText={text => setPassword(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder='Confirm Password'
+        secureTextEntry
+        onChangeText={text => setConfirmPassword(text)}
       />
       <TouchableOpacity style={styles.button} onPress={handleSignup}>
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
+
+      {/* Display message based on registration result */}
+      {msg ? (
+        <View
+          style={[
+            styles.messageContainer,
+            { backgroundColor: infoMessage ? 'green' : 'red' }
+          ]}
+        >
+          <Text style={styles.messageText}>{msg}</Text>
+        </View>
+      ) : null}
+
       <TouchableOpacity onPress={goToLogin}>
         <Text style={styles.loginLink}>
-          Already have an account? Login here.
+          Do you already have an account? Login here.
         </Text>
       </TouchableOpacity>
     </View>
@@ -65,6 +133,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40
+  },
+  logo: {
+    width: 250, // Adjust width as needed
+    height: 250, // Adjust height as needed
+    marginBottom: 20,
+    resizeMode: 'contain' // Ensure the logo scales correctly
   },
   title: {
     fontSize: 24,
@@ -83,19 +157,30 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#007BFF',
+    backgroundColor: COLORS.mainYellowL,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5
   },
   buttonText: {
-    color: '#FFF',
+    color: COLORS.mainDark,
     fontSize: 18,
     fontWeight: 'bold'
   },
   loginLink: {
     marginTop: 20,
     color: '#007BFF'
+  },
+  messageContainer: {
+    width: '100%',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginTop: 10,
+    borderRadius: 5
+  },
+  messageText: {
+    color: '#FFF',
+    textAlign: 'center'
   }
 })
 
