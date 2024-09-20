@@ -16,7 +16,8 @@ export default {
   SETTINGS: 'settings',
 
   LOBBY_ROOM: 'lobby room',
-  CREATE_ROOM: 'create room',
+  MANAGE_ROOM: 'manage room',
   JOIN_ROOM: 'join room',
-  ROOM_STACK: 'room stack'
+  ROOM_STACK: 'room stack',
+  GUEST_ROOM: 'guest room'
 }

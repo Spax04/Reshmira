@@ -18,4 +18,4 @@ export const sessionConfig = {
   renew: false
   // tslint:disable-next-line:jsdoc-format
   /** (boolean) renew session when session is nearly expired, so we can always keep user logged in. (default is false)*/
-}
+};

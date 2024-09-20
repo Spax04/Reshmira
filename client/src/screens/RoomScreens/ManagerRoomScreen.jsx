@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -6,72 +6,84 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl
-} from 'react-native';
-import axios from 'axios';
-import { COLORS, VARS } from '../../constants';
-import { useNavigation } from '@react-navigation/native';
+} from 'react-native'
+import axios from 'axios'
+import { COLORS, ROUTES, VARS } from '../../constants'
+import { setRoomUsers } from '../../store/reducers/roomReducer'
+import { useDispatch, useSelector } from 'react-redux'
 
-const CreateRoomScreen = () => {
-  const [roomCode, setRoomCode] = useState('AbC12D');
-  const [msg, setMsg] = useState('');
-  const [infoMessage, setInfoMessage] = useState(false);
-  const [users, setUsers] = useState([
-    { fullName: 'John Doe' },
-    { fullName: 'Jane Smith' },
-    { fullName: 'Alice Brown' }
-  ]); // Mock data for users
-  const [refreshing, setRefreshing] = useState(false);
-  const navigation = useNavigation();
+const ManagerRoomScreen = ({ navigation }) => {
+  const [roomCode, setRoomCode] = useState('AbC12D')
+  const [msg, setMsg] = useState('')
+  const [infoMessage, setInfoMessage] = useState(false)
+  const [users, setUsers] = useState([])
+  const [refreshing, setRefreshing] = useState(false)
+  const room = useSelector(state => state.room)
+  const user = useSelector(state => state.user)
+  const [errorMessage, setErrorMessage] = useState('')
+  const dispatch = useDispatch()
 
   useEffect(() => {
-    // Fetch initial data or any other initialization logic
-  }, []);
+    if (user._id === room.adminId) {
+      console.log('Correct admin')
 
-  const handleCreateRoom = async () => {
-    try {
-      const response = await axios.post(`${VARS.API_URL}/rooms/create`);
-
-      if (!response.data.success) {
-        setInfoMessage(false);
-        setMsg(response.data.msg);
-      } else {
-        setInfoMessage(true);
-        setRoomCode(response.data.roomCode); // Assuming the room code is in response.data.roomCode
-        setMsg('Room created successfully.');
-      }
-    } catch (error) {
-      console.error('Error creating room:', error);
-      setMsg('Error occurred while creating the room.');
+      setUsers(room.users)
+      setRoomCode(room.secret)
     }
-  };
+  }, [])
 
   const handleDeleteRoom = async () => {
-    // Implement room deletion logic here
-  };
+    setErrorMessage('')
+
+    try {
+      const { data: roomDeleteResponse } = await axios.post(
+        `${VARS.API_URL}/room/delete`,
+        { roomId: room._id },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`
+          }
+        }
+      )
+
+      if (!roomDeleteResponse.success) {
+        setErrorMessage(roomDeleteResponse.msg)
+      } else {
+        navigation.navigate(ROUTES.LOBBY_ROOM)
+      }
+    } catch {}
+  }
 
   const handleCreateSchedule = () => {
-    navigation.navigate('CreateScheduleScreen'); // Navigate to the schedule creation screen
-  };
+    // navigation.navigate('CreateScheduleScreen') // Navigate to the schedule creation screen
+  }
 
   const onRefresh = async () => {
-    setRefreshing(true);
+    setRefreshing(true)
     try {
-      const response = await axios.get(`${VARS.API_URL}/rooms/${roomCode}/users`);
-      if (response.data.success) {
-        setUsers(response.data.users);
+      const { data: usersByRoomIdResponse } = await axios.get(
+        `${VARS.API_URL}/room/${room._id}/users`
+      )
+      if (usersByRoomIdResponse.success) {
+        setUsers(usersByRoomIdResponse.data)
+        dispatch(setRoomUsers(usersByRoomIdResponse.data))
       } else {
-        setMsg('Failed to refresh users.');
+        setMsg('Failed to refresh users.')
       }
     } catch (error) {
-      console.error('Error refreshing users:', error);
-      setMsg('Error occurred while refreshing users.');
+      console.error('Error refreshing users:', error)
+      setMsg('Error occurred while refreshing users.')
     }
-    setRefreshing(false);
-  };
+    setRefreshing(false)
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        {errorMessage ? (
+          <Text style={styles.errorText}>{errorMessage}</Text> // Display error message if it exists
+        ) : null}
+
         {roomCode ? (
           <Text style={styles.roomCode}>Room Code: {roomCode}</Text>
         ) : null}
@@ -80,7 +92,9 @@ const CreateRoomScreen = () => {
         </TouchableOpacity>
         {roomCode ? (
           <>
-            <Text style={styles.usersHeader}>Connected Users ({users.length}) :</Text>
+            <Text style={styles.usersHeader}>
+              Connected Users ({users.length}) :
+            </Text>
             <FlatList
               data={users}
               keyExtractor={(item, index) => index.toString()}
@@ -90,11 +104,16 @@ const CreateRoomScreen = () => {
                 </View>
               )}
               ListEmptyComponent={<Text>No Users Connected</Text>}
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
             />
           </>
         ) : null}
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteRoom}>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleDeleteRoom}
+        >
           <Text style={styles.deleteButtonText}>Delete Room</Text>
         </TouchableOpacity>
         {msg ? (
@@ -109,10 +128,10 @@ const CreateRoomScreen = () => {
         ) : null}
       </View>
     </View>
-  );
-};
+  )
+}
 
-export default CreateRoomScreen;
+export default ManagerRoomScreen
 
 const styles = StyleSheet.create({
   container: {
@@ -194,5 +213,9 @@ const styles = StyleSheet.create({
   messageText: {
     color: '#FFF',
     textAlign: 'center'
+  },
+  errorText: {
+    color: 'red', // Set text color to red for error messages
+    marginBottom: 20
   }
-});
+})

@@ -6,24 +6,27 @@ export const RoomController = (router: any) => {
   router.post('/room/create', bodyParser(), createRoom)
   router.post('/room/join', bodyParser(), joinRoom)
   router.post('/room/out', bodyParser(), outRoom)
+  router.post('/room/delete', bodyParser(), deleteRoom)
+  router.post('/room/:roomId/users', bodyParser(), usersByRoomId)
 }
 
 export async function createRoom (ctx: any): Promise<any> {
   try {
     const { adminId } = ctx.request.body
 
-    const createdRoomResponse = await new RoomService().createRoom(adminId)
+    const { success, data, msg } = await new RoomService().createRoom(adminId)
 
-    if (createdRoomResponse.success) {
+    if (success) {
       ctx.body = JSON.stringify({
         success: true,
-        data: createdRoomResponse.data
+        data: data,
+        msg: msg
       })
       ctx.status = 200
     } else {
       ctx.body = JSON.stringify({
         success: false,
-        msg: 'Unseccfull to create a new room'
+        msg: msg
       })
       ctx.status = 500
     }
@@ -107,6 +110,73 @@ export async function outRoom (ctx: any): Promise<any> {
       data: updatedRoomData
     })
     ctx.status = 200
+  } catch (error) {
+    console.error('Error in outRoom:', error)
+    ctx.body = JSON.stringify({
+      success: false,
+      msg: 'Internal server error'
+    })
+    ctx.status = 500
+  }
+}
+
+export async function deleteRoom (ctx: any): Promise<any> {
+  const { roomId } = ctx.request.body
+
+  try {
+    const roomResponse = await new RoomService().deleteRoom(
+      new mongoose.Types.ObjectId(roomId)
+    )
+
+    if (!roomResponse.success) {
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: roomResponse.msg
+      })
+      ctx.status = 404
+      return
+    } else {
+      ctx.body = JSON.stringify({
+        success: true,
+        msg: roomResponse.msg
+      })
+      ctx.status = 200
+      return
+    }
+  } catch (error) {
+    console.error('Error in outRoom:', error)
+    ctx.body = JSON.stringify({
+      success: false,
+      msg: 'Internal server error'
+    })
+    ctx.status = 500
+  }
+}
+
+export async function usersByRoomId (ctx: any): Promise<any> {
+  const { roomId } = ctx.request.params
+
+  try {
+    const roomResponse = await new RoomService().getUsersByRoomId(
+      new mongoose.Types.ObjectId(roomId)
+    )
+
+    if (!roomResponse.success) {
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: roomResponse.msg
+      })
+      ctx.status = 404
+      return
+    } else {
+      ctx.body = JSON.stringify({
+        success: true,
+        data: roomResponse.data,
+        msg: roomResponse.msg
+      })
+      ctx.status = 200
+      return
+    }
   } catch (error) {
     console.error('Error in outRoom:', error)
     ctx.body = JSON.stringify({

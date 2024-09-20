@@ -24,7 +24,7 @@ const JoinRoomScreen = () => {
     }
 
     try {
-      const response = await axios.post(`${VARS.API_URL}/rooms/join`, {
+      const response = await axios.post(`${VARS.API_URL}/room/join`, {
         code: roomCode
       })
 
@@ -34,7 +34,7 @@ const JoinRoomScreen = () => {
       } else {
         setInfoMessage(true)
         setMsg(response.data.msg)
-        navigation.navigate('RoomScreen') // Navigate to the room screen
+       // navigation.navigate('RoomScreen') // Navigate to the room screen
       }
     } catch (error) {
       if (error.response) {

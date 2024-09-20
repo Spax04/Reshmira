@@ -1,3 +1,3 @@
 export default{
-   API_URL:'http://10.100.102.130:5000'
+   API_URL:'http://192.168.1.176:5000'
 }
