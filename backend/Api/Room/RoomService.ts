@@ -24,7 +24,7 @@ export class RoomService {
 
       const newRoom: Room = {
         secret: secret,
-        users: [],
+        users: [new mongoose.Types.ObjectId(adminId)],
         adminId: new mongoose.Types.ObjectId(adminId),
         created_at: new Date(),
         updated_at: new Date(),
@@ -138,6 +138,32 @@ export class RoomService {
       }
     }
   }
+
+  //   addPatrticipant = async (
+  //   id: mongoose.Types.ObjectId,
+  //   updatedRoomData: Partial<Room>
+  // ): Promise<any> => {
+  //   try {
+  //     await mongoose.connect(process.env.DATABASE_URL as string)
+
+  //     const updatedRoom = await RoomModel.findByIdAndUpdate(id, updatedRoomData, {
+  //       new: true
+  //     }).exec()
+
+  //     await mongoose.disconnect()
+  //     return {
+  //       success: true,
+  //       data: updatedRoom as RoomWithId,
+  //       msg: 'Room was updated successfuly'
+  //     }
+  //   } catch (err) {
+  //     console.error('Error in updateRoom:', err)
+  //     return {
+  //       success: false,
+  //       msg: 'Running in problem on user update: ' + err
+  //     }
+  //   }
+  // }
 
   deleteRoom = async (id: mongoose.Types.ObjectId): Promise<any> => {
     try {

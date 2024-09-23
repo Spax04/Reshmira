@@ -42,25 +42,42 @@ export async function createRoom (ctx: any): Promise<any> {
 export async function joinRoom (ctx: any): Promise<any> {
   const { secret, newParticipantId } = ctx.request.body
 
-  const room = await new RoomService().getRoomBySecret(secret)
+  const {
+    success: roomBySecretSuccess,
+    data: roomBySecretData,
+    msg: roomBySecretMsg
+  } = await new RoomService().getRoomBySecret(secret)
 
-  if (room.success) {
-    room.data.users.push(new mongoose.Types.ObjectId(newParticipantId))
+  if (roomBySecretSuccess) {
+    roomBySecretData.users.push(new mongoose.Types.ObjectId(newParticipantId))
 
-    const updateresponse = await new RoomService().updateRoom(
-      room.data._id,
-      room.data
+    const {
+      success: updateRoomSuccess,
+      data: updateRoomData,
+      msg: updateRoomMsg
+    } = await new RoomService().updateRoom(
+      roomBySecretData._id,
+      roomBySecretData
     )
 
-    ctx.body = JSON.stringify({
-      success: true,
-      data: room.data
-    })
-    ctx.status = 200
+    if (updateRoomSuccess) {
+      ctx.body = JSON.stringify({
+        success: updateRoomSuccess,
+        data: updateRoomData,
+        msg: "Joing to room."
+      })
+      ctx.status = 200
+    } else {
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: 'Error on adding new participant to the room.'
+      })
+      ctx.status = 500
+    }
   } else {
     ctx.body = JSON.stringify({
       success: false,
-      msg: 'Not correct room code,try again'
+      msg: 'Not correct room code, try again.'
     })
     ctx.status = 404
   }

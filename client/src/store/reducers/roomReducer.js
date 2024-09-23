@@ -39,13 +39,25 @@ export const roomSlice = createSlice({
         .then(() => console.log('Room data stored in AsyncStorage'))
         .catch(error => console.error('Error storing room:', error))
     },
-    setRoomUsers: (state, action) => {
+    removeRoom: (state, action) => {
+      state._id = ''
+      state.secret = ''
+      state.users = []
+      state.adminId = ''
+      state.scheduleId = null
+      state.createdAt = null
+      state.updatedAt = null
 
+      AsyncStorage.removeItem('room')
+        .then(() => console.log('Room data removed from AsyncStorage'))
+        .catch(error => console.error('Error removing room:', error))
+    },
+    setRoomUsers: (state, action) => {
       state.users = action.payload
     }
   }
 })
 
-export const { setRoom, setRoomUsers } = roomSlice.actions
+export const { setRoom, setRoomUsers, removeRoom } = roomSlice.actions
 
 export default roomSlice.reducer

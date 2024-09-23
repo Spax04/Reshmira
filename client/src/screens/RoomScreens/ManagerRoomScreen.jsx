@@ -9,11 +9,11 @@ import {
 } from 'react-native'
 import axios from 'axios'
 import { COLORS, ROUTES, VARS } from '../../constants'
-import { setRoomUsers } from '../../store/reducers/roomReducer'
+import { removeRoom, setRoomUsers } from '../../store/reducers/roomReducer'
 import { useDispatch, useSelector } from 'react-redux'
 
 const ManagerRoomScreen = ({ navigation }) => {
-  const [roomCode, setRoomCode] = useState('AbC12D')
+  const [roomCode, setRoomCode] = useState('')
   const [msg, setMsg] = useState('')
   const [infoMessage, setInfoMessage] = useState(false)
   const [users, setUsers] = useState([])
@@ -24,16 +24,20 @@ const ManagerRoomScreen = ({ navigation }) => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (user._id === room.adminId) {
+    if (user._id === room.adminId && room.adminId !== '') {
       console.log('Correct admin')
 
       setUsers(room.users)
       setRoomCode(room.secret)
+    } else {
+      navigation.navigate(ROUTES.LOBBY_ROOM)
     }
   }, [])
 
   const handleDeleteRoom = async () => {
     setErrorMessage('')
+    dispatch(removeRoom())
+    navigation.navigate(ROUTES.LOBBY_ROOM)
 
     try {
       const { data: roomDeleteResponse } = await axios.post(
@@ -45,6 +49,7 @@ const ManagerRoomScreen = ({ navigation }) => {
           }
         }
       )
+      console.log(roomDeleteResponse)
 
       if (!roomDeleteResponse.success) {
         setErrorMessage(roomDeleteResponse.msg)

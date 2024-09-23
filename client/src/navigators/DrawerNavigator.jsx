@@ -14,6 +14,7 @@ import RoomNavigator from './RoomNavigator'
 import { useSelector } from 'react-redux'
 import { removeUser } from '../store/reducers/userReducer'
 import { useDispatch } from 'react-redux'
+import { removeRoom } from '../store/reducers/roomReducer'
 
 const Drawer = createDrawerNavigator()
 
@@ -28,6 +29,7 @@ const CustomDrawerContent = props => {
         label='Logout'
         onPress={() => {
           dispatch(removeUser())
+          dispatch(removeRoom())
           navigation.navigate(ROUTES.LOGIN) // Navigate to UserProfile with user data
           console.log('Logout pressed')
         }}

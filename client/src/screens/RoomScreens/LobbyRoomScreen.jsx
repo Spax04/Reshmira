@@ -3,8 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { COLORS, ROUTES, VARS } from '../../constants'
 import { useSelector, useDispatch } from 'react-redux'
 import axios from 'axios'
-import { setRoom } from '../../store/reducers/roomReducer'
+import { removeRoom, setRoom } from '../../store/reducers/roomReducer'
 import { useNavigation } from '@react-navigation/native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const LobbyRoomScreen = ({ navigation }) => {
   const user = useSelector(state => state.user)
@@ -43,22 +44,26 @@ const LobbyRoomScreen = ({ navigation }) => {
 
   const handleJoinRoom = () => {
     // Navigate to the Join Room screen or handle join room logic
-    // navigation.navigate(ROUTES.JOIN_ROOM)
+    navigation.navigate(ROUTES.JOIN_ROOM)
   }
 
-  useEffect(async () => {
-    const storedRoom = await AsyncStorage.getItem('room')
+  useEffect(() => {
+    const getRoom = async () => {
+      const storedRoom = await AsyncStorage.getItem('room')
+      
+      if (storedRoom) {
+        const room = JSON.parse(storedRoom)
+        dispatch(setRoom(room))
 
-    if (storedRoom) {
-      const room = JSON.parse(storedRoom)
-      dispatch(setRoom(room))
-
-      if (user._id === room.adminId) {
-        navigation.navigate(ROUTES.MANAGE_ROOM)
-      } else {
-        navigation.navigate(ROUTES.GUEST_ROOM)
+        if (user._id === room.adminId) {
+          navigation.navigate(ROUTES.MANAGE_ROOM)
+        } else {
+          navigation.navigate(ROUTES.GUEST_ROOM)
+        }
       }
     }
+
+    getRoom()
   }, [])
 
   return (

@@ -7,14 +7,18 @@ import {
   StyleSheet
 } from 'react-native'
 import axios from 'axios'
-import { COLORS, VARS } from '../../constants'
+import { COLORS, ROUTES, VARS } from '../../constants'
 import { useNavigation } from '@react-navigation/native'
+import { useDispatch, useSelector } from 'react-redux'
+import { setRoom } from '../../store/reducers/roomReducer'
 
 const JoinRoomScreen = () => {
   const navigation = useNavigation() // Initialize the navigation hook
   const [roomCode, setRoomCode] = useState('')
   const [msg, setMsg] = useState('')
   const [infoMessage, setInfoMessage] = useState(false)
+  const user = useSelector(state => state.user)
+  const dispatch = useDispatch()
 
   const handleJoinRoom = async () => {
     if (roomCode.length !== 6) {
@@ -24,17 +28,28 @@ const JoinRoomScreen = () => {
     }
 
     try {
-      const response = await axios.post(`${VARS.API_URL}/room/join`, {
-        code: roomCode
-      })
+      const { data: joinRoomData } = await axios.post(
+        `${VARS.API_URL}/room/join`,
+        {
+          secret: roomCode,
+          newParticipantId: user._id
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`
+          }
+        }
+      )
+      console.log('joing room data: ' + joinRoomData)
 
-      if (!response.data.success) {
+      if (!joinRoomData.success) {
         setInfoMessage(false)
-        setMsg(response.data.msg)
+        setMsg(joinRoomData.msg)
       } else {
         setInfoMessage(true)
-        setMsg(response.data.msg)
-       // navigation.navigate('RoomScreen') // Navigate to the room screen
+        setMsg(joinRoomData.msg)
+        dispatch(setRoom(joinRoomData.data))
+        navigation.navigate(ROUTES.GUEST_ROOM)
       }
     } catch (error) {
       if (error.response) {
@@ -52,7 +67,10 @@ const JoinRoomScreen = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        style={styles.backBtn}
+        onPress={() => navigation.goBack()}
+      >
         <Text style={styles.backBtnText}>Back</Text>
       </TouchableOpacity>
       <View style={styles.content}>
@@ -87,8 +105,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    justifyContent:'center',
-    backgroundColor: '#f0f0f0', // Light background color for better contrast
+    justifyContent: 'center',
+    backgroundColor: '#f0f0f0' // Light background color for better contrast
   },
   backBtn: {
     position: 'absolute',
@@ -107,8 +125,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center', // Center align all items vertically
     alignItems: 'center', // Center align all items horizontally
     marginTop: 50,
-    marginLeft:40,
-    marginRight:40 // Added margin top for better visibility
+    marginLeft: 40,
+    marginRight: 40 // Added margin top for better visibility
   },
   title: {
     fontSize: 32,
