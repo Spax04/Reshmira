@@ -13,6 +13,7 @@ import axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
 import { setUser, setUserToken } from '../../store/reducers/userReducer'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { setRoom } from '../../store/reducers/roomReducer'
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('')
@@ -27,7 +28,7 @@ const LoginScreen = ({ navigation }) => {
       try {
         const storedUser = await AsyncStorage.getItem('user')
         const storedToken = await AsyncStorage.getItem('token')
-        
+
         if (storedUser && storedToken) {
           const parsedUser = JSON.parse(storedUser)
           const parsedToken = JSON.parse(storedToken)
@@ -53,39 +54,57 @@ const LoginScreen = ({ navigation }) => {
       }
 
       console.log(VARS.API_URL)
-      const response = await axios.post(`${VARS.API_URL}/auth/login`, {
-        email,
-        password
-      })
+      const { data: loginResponse } = await axios.post(
+        `${VARS.API_URL}/auth/login`,
+        {
+          email,
+          password
+        }
+      )
 
-      if (!response.data.success) {
+      if (!loginResponse.success) {
         setInfoMessage(false)
-        setMsg(response.data.msg)
+        setMsg(loginResponse.msg)
       } else {
         setInfoMessage(true)
-        setMsg(response.data.msg)
+        setMsg(loginResponse.msg)
 
-        console.log(response.data)
-        console.log(response.data.data)
-        dispatch(setUserToken(response.data.data))
+        console.log(loginResponse.data)
+        dispatch(setUserToken(loginResponse.data))
         try {
-          const userSelfResponse = await axios.post(
+          const { data: userSelfResponse } = await axios.post(
             `${VARS.API_URL}/user`,
             {
-              token: response.data.data
+              token: loginResponse.data
             },
             {
               headers: {
-                Authorization: `Bearer ${response.data.data}`
+                Authorization: `Bearer ${loginResponse.data}`
               }
             }
           )
-          console.log(userSelfResponse.data)
-          if (!userSelfResponse.data.success) {
+          console.log('user self response ' + userSelfResponse.data)
+          console.log(userSelfResponse.data._id)
+
+          if (!userSelfResponse.success) {
             setInfoMessage(false)
-            setMsg(userSelfResponse.data.msg)
+            setMsg(userSelfResponse.msg)
           } else {
-            dispatch(setUser(userSelfResponse.data.data))
+            dispatch(setUser(userSelfResponse.data))
+
+            const { data: usersRoomData } = await axios.get(
+              `${VARS.API_URL}/room/${userSelfResponse.data._id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${loginResponse.data}`
+                }
+              }
+            )
+            console.log('user self response ' + userSelfResponse)
+
+            if (usersRoomData.success) {
+              dispatch(setRoom(usersRoomData.data))
+            }
             navigation.navigate(ROUTES.HOME)
           }
         } catch (err) {

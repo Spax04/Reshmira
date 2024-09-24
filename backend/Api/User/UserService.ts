@@ -37,9 +37,11 @@ export class UserService {
         fullName: response.data.full_name,
         email: response.data.email,
         role: response.data.role,
-        scheduleId: response.data.schedule_id,
+        scheduleId: response.data.room_id,
         shifts: [...response.data.shifts]
       }
     }
   }
+
+  
 }

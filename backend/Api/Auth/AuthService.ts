@@ -67,7 +67,7 @@ export class AuthService {
       password: hashedPassword,
       role: 'none', // or 'admin' depending on your logic
       confirmed: false,
-      schedule_id: null, // fill in with appropriate value
+      room_id: null, // fill in with appropriate value
       shifts: [], // or any default shifts
       refresh_token: null,
       createdAt: new Date(),

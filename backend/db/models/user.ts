@@ -16,9 +16,9 @@ const userSchema = new Schema(
     password: { type: String, required: true },
     confirmed: { type: Boolean, default: false },
     role: { type: String, enum: ['admin', 'guest', 'none'], default: 'none' },
-    schedule_id: {
+    room_id: {
       type: Schema.Types.ObjectId,
-      ref: 'Schedule',
+      ref: 'Room',
       required: false
     },
     shifts: [{ type: Schema.Types.ObjectId, ref: 'Shift' }],

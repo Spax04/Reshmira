@@ -98,7 +98,7 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item }) => (
                 <View style={styles.userItem}>
-                  <Text style={styles.userName}>{item.fullName}</Text>
+                  <Text style={styles.userName}>{item}</Text>
                 </View>
               )}
               ListEmptyComponent={<Text>No Participants Connected</Text>}

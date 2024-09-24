@@ -67,7 +67,12 @@ const ManagerRoomScreen = ({ navigation }) => {
     setRefreshing(true)
     try {
       const { data: usersByRoomIdResponse } = await axios.get(
-        `${VARS.API_URL}/room/${room._id}/users`
+        `${VARS.API_URL}/room/${room._id}/users`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`
+          }
+        }
       )
       if (usersByRoomIdResponse.success) {
         setUsers(usersByRoomIdResponse.data)
@@ -105,7 +110,7 @@ const ManagerRoomScreen = ({ navigation }) => {
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item }) => (
                 <View style={styles.userItem}>
-                  <Text style={styles.userName}>{item.fullName}</Text>
+                  <Text style={styles.userName}>{item}</Text>
                 </View>
               )}
               ListEmptyComponent={<Text>No Users Connected</Text>}
