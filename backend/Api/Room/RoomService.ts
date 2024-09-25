@@ -70,7 +70,7 @@ export class RoomService {
 
       return {
         success: true,
-        createRoomData,
+        data: createRoomData,
         msg: 'Room has been created successfully!'
       }
     } catch (err) {

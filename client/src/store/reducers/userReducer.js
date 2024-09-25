@@ -6,7 +6,7 @@ const initialState = {
   _id: '',
   fullName: '',
   role: 'none',
-  scheduleId: null,
+  roomId: null,
   shifts: []
 }
 
@@ -16,16 +16,16 @@ export const userSlice = createSlice({
   reducers: {
     setUser: (state, action) => {
       state._id = action.payload._id
-      state.fullName = action.payload.fullName
+      state.fullName = action.payload.full_name
       state.role = action.payload.role
-      state.scheduleId = action.payload.scheduleId
+      state.roomId = action.payload.room_id
       state.shifts = [...action.payload.shifts]
 
       const user = {
         _id: action.payload._id,
-        fullName: action.payload.fullName,
+        fullName: action.payload.full_name,
         role: action.payload.role,
-        scheduleId: action.payload.scheduleId,
+        roomId: action.payload.room_id,
         shifts: [...action.payload.shifts]
       }
 
@@ -45,7 +45,7 @@ export const userSlice = createSlice({
       state._id = ''
       state.fullName = ''
       state.role = 'none'
-      state.scheduleId = null
+      state.roomId = null
       state.shifts = []
       // Remove user data from AsyncStorage
       AsyncStorage.removeItem('user')
@@ -57,12 +57,13 @@ export const userSlice = createSlice({
       state._id = action.payload._id || ''
       state.fullName = action.payload.fullName || ''
       state.role = action.payload.role || 'none'
-      state.scheduleId = action.payload.scheduleId || null
+      state.roomId = action.payload.room_id || null
       state.shifts = action.payload.shifts || []
     }
   }
 })
 
-export const { setUser, removeUser, setUserToken, initializeState } = userSlice.actions
+export const { setUser, removeUser, setUserToken, initializeState } =
+  userSlice.actions
 
 export default userSlice.reducer

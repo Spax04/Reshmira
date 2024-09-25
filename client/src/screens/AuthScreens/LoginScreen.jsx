@@ -72,38 +72,36 @@ const LoginScreen = ({ navigation }) => {
         console.log(loginResponse.data)
         dispatch(setUserToken(loginResponse.data))
         try {
-          const { data: userSelfResponse } = await axios.post(
+          const { data: userSelfResponse } = await axios.get(
             `${VARS.API_URL}/user`,
-            {
-              token: loginResponse.data
-            },
             {
               headers: {
                 Authorization: `Bearer ${loginResponse.data}`
               }
             }
           )
-          console.log('user self response ' + userSelfResponse.data)
-          console.log(userSelfResponse.data._id)
 
           if (!userSelfResponse.success) {
             setInfoMessage(false)
             setMsg(userSelfResponse.msg)
           } else {
+            console.log(userSelfResponse.data)
+
             dispatch(setUser(userSelfResponse.data))
 
-            const { data: usersRoomData } = await axios.get(
-              `${VARS.API_URL}/room/${userSelfResponse.data._id}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${loginResponse.data}`
+            if (userSelfResponse.data.room_id !== null) {
+              const { data: usersRoomData } = await axios.get(
+                `${VARS.API_URL}/room/${userSelfResponse.data.room_id}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${loginResponse.data}`
+                  }
                 }
-              }
-            )
-            console.log('user self response ' + userSelfResponse)
+              )
 
-            if (usersRoomData.success) {
-              dispatch(setRoom(usersRoomData.data))
+              if (usersRoomData.success) {
+                dispatch(setRoom(usersRoomData.data))
+              }
             }
             navigation.navigate(ROUTES.HOME)
           }

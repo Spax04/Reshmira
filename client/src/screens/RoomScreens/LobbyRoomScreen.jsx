@@ -16,6 +16,8 @@ const LobbyRoomScreen = ({ navigation }) => {
   const handleCreateRoom = async () => {
     setErrorMessage('')
 
+    console.log({ ...user })
+
     try {
       const { data: createRoomResponse } = await axios.post(
         `${VARS.API_URL}/room/create`,
@@ -28,6 +30,8 @@ const LobbyRoomScreen = ({ navigation }) => {
           }
         }
       )
+
+      console.log({ ...createRoomResponse })
 
       if (createRoomResponse.success) {
         dispatch(setRoom(createRoomResponse.data))
@@ -50,7 +54,7 @@ const LobbyRoomScreen = ({ navigation }) => {
   useEffect(() => {
     const getRoom = async () => {
       const storedRoom = await AsyncStorage.getItem('room')
-      
+
       if (storedRoom) {
         const room = JSON.parse(storedRoom)
         dispatch(setRoom(room))

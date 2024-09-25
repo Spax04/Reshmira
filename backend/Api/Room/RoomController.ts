@@ -54,6 +54,8 @@ export async function createRoom (ctx: any): Promise<any> {
       adminId
     )
 
+    console.log(data);
+    
     if (success) {
       ctx.body = JSON.stringify({
         success: true,

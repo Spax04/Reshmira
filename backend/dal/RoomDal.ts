@@ -107,9 +107,9 @@ export class RoomDal {
 
   deleteRoom = async (id: mongoose.Types.ObjectId) => {
     try {
-      mongoose.connect(process.env.DATABASE_URL as string).then(async () => {
-        await RoomModel.findByIdAndDelete(id).exec()
-      })
+      await mongoose.connect(process.env.DATABASE_URL as string)
+
+      await RoomModel.findByIdAndDelete(id).exec()
 
       return { success: true, msg: 'Room was deleted sucessfuly' }
     } catch (err) {

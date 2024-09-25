@@ -20,7 +20,7 @@ const Drawer = createDrawerNavigator()
 
 const CustomDrawerContent = props => {
   const navigation = useNavigation()
- const dispatch = useDispatch()
+  const dispatch = useDispatch()
 
   return (
     <DrawerContentScrollView {...props}>
@@ -42,8 +42,8 @@ const DrawerNavigator = () => {
   const user = useSelector(state => state.user)
 
   useEffect(() => {
-    console.log(user)
-  }, [user.scheduleId])
+    console.log('user in drawer ' + { ...user })
+  }, [user.roomId])
   return (
     <Drawer.Navigator
       drawerContent={props => <CustomDrawerContent {...props} />}
@@ -51,7 +51,7 @@ const DrawerNavigator = () => {
         headerTitle: ''
       }}
     >
-      {user.scheduleId !== null ? (
+      {user.roomId !== null && user.shifts.length !== 0 ? (
         <Drawer.Screen
           name={ROUTES.HOME_DRAWER}
           component={ButtomTabNavigator}

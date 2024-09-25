@@ -34,10 +34,9 @@ export class UserService {
       msg: 'User has been retieved',
       data: {
         _id: response.data._id,
-        fullName: response.data.full_name,
-        email: response.data.email,
+        full_name: response.data.full_name,
         role: response.data.role,
-        scheduleId: response.data.room_id,
+        room_id: response.data.room_id,
         shifts: [...response.data.shifts]
       }
     }
