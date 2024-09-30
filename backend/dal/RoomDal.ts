@@ -10,7 +10,9 @@ interface UpdateRoomResponse {
 export class RoomDal {
   createRoom = async (roomData: Room) => {
     try {
-      await mongoose.connect(process.env.DATABASE_URL as string)
+      await mongoose.connect(process.env.DATABASE_URL as string, {
+        autoIndex: true
+      })
 
       if (!RoomModel.collection) {
         await RoomModel.createCollection()
@@ -56,7 +58,7 @@ export class RoomDal {
   getRoomBySecret = async (secret: String) => {
     try {
       // Ensure Mongoose is connected
-      await mongoose.connect(process.env.DATABASE_URL as string)
+      await mongoose.connect(process.env.DATABASE_URL as string, { autoIndex: true })
 
       if (mongoose.connection.readyState !== 1) {
         throw new Error('MongoDB is not connected')
@@ -104,6 +106,41 @@ export class RoomDal {
       await mongoose.disconnect()
     }
   }
+
+  getUsersByRoomId = async (id: mongoose.Types.ObjectId) => {
+  try {
+    // Connect to the database (will only connect if not already connected)
+    await mongoose.connect(process.env.DATABASE_URL as string)
+
+    // Find the room by ID
+    const room = await RoomModel.findById(id).exec()
+
+    if (!room) {
+      return {
+        success: false,
+        msg: 'Room does not exist',
+        data: null  //! If data is null, probably room has been deleted
+      }
+    }
+
+    // Return the list of users in the room
+    return {
+      success: true,
+      data: room.users,
+      msg: 'Users retrieved successfully'
+    }
+  } catch (error) {
+    // Catch and log any error (connection error or other)
+    console.error('Error in getUsersByRoomId:', error)
+
+    return {
+      success: false,
+      msg: 'An error occurred while retrieving users: ' + error.message,
+      data: undefined
+    }
+  }
+}
+
 
   deleteRoom = async (id: mongoose.Types.ObjectId) => {
     try {

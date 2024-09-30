@@ -12,10 +12,9 @@ export const RoomController = (router: any) => {
   router.get('/room/:roomId', bodyParser(), getRoomById)
 }
 
-export async function getRoomById(ctx: any): Promise<any> {
-  
-  console.log("here");
-  
+export async function getRoomById (ctx: any): Promise<any> {
+  console.log('here')
+
   try {
     const { roomId } = ctx.request.params
 
@@ -54,8 +53,8 @@ export async function createRoom (ctx: any): Promise<any> {
       adminId
     )
 
-    console.log(data);
-    
+    console.log(data)
+
     if (success) {
       ctx.body = JSON.stringify({
         success: true,
@@ -149,9 +148,7 @@ export async function deleteRoom (ctx: any): Promise<any> {
   const { roomId } = ctx.request.body
 
   try {
-    const roomResponse = await new RoomDal().deleteRoom(
-      new mongoose.Types.ObjectId(roomId)
-    )
+    const roomResponse = await new RoomService().deleteRoom(roomId)
 
     if (!roomResponse.success) {
       ctx.body = JSON.stringify({
@@ -169,7 +166,7 @@ export async function deleteRoom (ctx: any): Promise<any> {
       return
     }
   } catch (error) {
-    console.error('Error in outRoom:', error)
+    console.error('Error in deleteRoom:', error)
     ctx.body = JSON.stringify({
       success: false,
       msg: 'Internal server error'
@@ -182,7 +179,7 @@ export async function usersByRoomId (ctx: any): Promise<any> {
   const { roomId } = ctx.request.params
 
   try {
-    const roomResponse = await new RoomService().getUsersByRoomId(
+    const roomResponse = await new RoomDal().getUsersByRoomId(
       new mongoose.Types.ObjectId(roomId)
     )
 

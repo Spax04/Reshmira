@@ -46,7 +46,6 @@ export class UserDal {
       throw error // Re-throw the error for handling in caller function
     } finally {
       await mongoose.disconnect()
-
     }
   }
 
@@ -64,9 +63,46 @@ export class UserDal {
     } catch (error) {
       console.error('Error in getUser:', error)
       throw error // Re-throw the error for handling in caller function
-    }finally {
+    } finally {
       await mongoose.disconnect()
+    }
+  }
 
+  getUsersByRoomId = async (roomId: mongoose.Types.ObjectId) => {
+    try {
+      await mongoose.connect(process.env.DATABASE_URL as string)
+      const users = await UserModel.find({ room_id: roomId })
+      return {
+        success: true,
+        data: users,
+        msg: 'Users by room id ware retieved'
+      }
+    } catch (err) {
+      console.error('Error in getUsersByRoomId:', err)
+      return { success: false, msg: 'Error in getUsersByRoomId:' + err }
+    } finally {
+      await mongoose.disconnect()
+    }
+  }
+
+  removeRoomFromUsers = async (
+    roomId: mongoose.Types.ObjectId
+  ): Promise<any> => {
+    try {
+      await mongoose.connect(process.env.DATABASE_URL as string)
+
+      // Update all users with the given room ID and set their room_id to null
+      await UserModel.updateMany(
+        { room_id: roomId },
+        { $set: { room_id: null } }
+      )
+
+      return { success: true, msg: 'Users successfully updated' }
+    } catch (err) {
+      console.error('Error in removeRoomFromUsers:', err)
+      return { success: false, msg: 'Error updating users: ' + err.message }
+    } finally {
+      await mongoose.disconnect()
     }
   }
 

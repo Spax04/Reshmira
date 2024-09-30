@@ -80,30 +80,7 @@ export class RoomService {
     }
   }
 
-  getUsersByRoomId = async (id: mongoose.Types.ObjectId) => {
-    try {
-      // Ensure Mongoose is connected
-      await mongoose.connect(process.env.DATABASE_URL as string)
-
-      if (mongoose.connection.readyState !== 1) {
-        throw new Error('MongoDB is not connected')
-      }
-
-      const data = await RoomModel.findById(id).exec()
-      if (data != null) {
-        return {
-          success: true,
-          data: data.users,
-          msg: 'Users retrived by Room id'
-        }
-      } else {
-        throw 'Room does not exist'
-      }
-    } catch (error) {
-      console.error('Error in getRoomById:', error)
-      throw error // Re-throw the error for handling in caller function
-    }
-  }
+  
 
   addRoomPatrticipant = async (
     secret: string,
@@ -260,6 +237,44 @@ export class RoomService {
       return {
         success: false,
         msg: 'Running in problem on room update: ' + err
+      }
+    }
+  }
+
+  deleteRoom = async (roomId: string): Promise<any> => {
+    try {
+      const roomObjectId = new mongoose.Types.ObjectId(roomId)
+
+      // Step 1: Find all users who are associated with the room
+      const { success: updateUsersSuccess, msg: updateUsersMsg } =
+        await new UserDal().removeRoomFromUsers(roomObjectId)
+
+      if (!updateUsersSuccess) {
+        return {
+          success: false,
+          msg: updateUsersMsg
+        }
+      }
+
+      const { success: deleteRoomSuccess, msg: deleteRoomMsg } =
+        await new RoomDal().deleteRoom(roomObjectId)
+
+      if (!deleteRoomSuccess) {
+        return {
+          success: false,
+          msg: deleteRoomMsg
+        }
+      }
+
+      return {
+        success: true,
+        msg: `Room with ID ${roomId} has been successfully deleted`
+      }
+    } catch (err) {
+      console.error('Error in deleteRoom:', err)
+      return {
+        success: false,
+        msg: 'Running in problem on room deleting: ' + err
       }
     }
   }
