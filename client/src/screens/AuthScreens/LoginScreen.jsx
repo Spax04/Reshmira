@@ -5,8 +5,11 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image
+  Image,
+  ActivityIndicator
 } from 'react-native'
+import { useToast } from 'react-native-toast-notifications'
+
 import { COLORS, ROUTES, VARS } from '../../constants'
 import LogoImage from '../../../assets/images/logo.png'
 import axios from 'axios'
@@ -16,12 +19,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { setRoom } from '../../store/reducers/roomReducer'
 
 const LoginScreen = ({ navigation }) => {
+  const toast = useToast()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [infoMessage, setInfoMessage] = useState(false)
   const [msg, setMsg] = useState('')
   const dispatch = useDispatch()
   const user = useSelector(state => state.user)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const checkUser = async () => {
@@ -53,7 +58,7 @@ const LoginScreen = ({ navigation }) => {
         return
       }
 
-      console.log(VARS.API_URL)
+      setLoading(true)
       const { data: loginResponse } = await axios.post(
         `${VARS.API_URL}/auth/login`,
         {
@@ -64,10 +69,23 @@ const LoginScreen = ({ navigation }) => {
 
       if (!loginResponse.success) {
         setInfoMessage(false)
-        setMsg(loginResponse.msg)
+        toast.show(loginResponse.msg, {
+          type: 'danger',
+          placement: 'bottom',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in'
+        })
+        setLoading(false)
       } else {
         setInfoMessage(true)
-        setMsg(loginResponse.msg)
+        toast.show('Login successfully!', {
+          type: 'success',
+          placement: 'bottom',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in'
+        })
 
         console.log(loginResponse.data)
         dispatch(setUserToken(loginResponse.data))
@@ -84,6 +102,7 @@ const LoginScreen = ({ navigation }) => {
           if (!userSelfResponse.success) {
             setInfoMessage(false)
             setMsg(userSelfResponse.msg)
+            setLoading(false)
           } else {
             console.log(userSelfResponse.data)
 
@@ -103,11 +122,18 @@ const LoginScreen = ({ navigation }) => {
                 dispatch(setRoom(usersRoomData.data))
               }
             }
+            setLoading(false)
             navigation.navigate(ROUTES.HOME)
           }
         } catch (err) {
           setInfoMessage(false)
-          setMsg(err.message)
+          toast.show(err.message, {
+            type: 'danger',
+            placement: 'bottom',
+            duration: 4000,
+            offset: 30,
+            animationType: 'slide-in'
+          })
         }
       }
     } catch (error) {
@@ -131,6 +157,8 @@ const LoginScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image source={LogoImage} style={styles.logo} />
+      <ActivityIndicator animating={loading} size='large' />
+
       <Text style={styles.title}>Login</Text>
       <TextInput
         style={styles.input}

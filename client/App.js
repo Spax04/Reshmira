@@ -4,18 +4,21 @@ import AuthNavigator from './src/navigators/AuthNavigator'
 import { Provider } from 'react-redux'
 import store from './src/store'
 import Initializer from './src/utils/Initializer' // Update the path accordingly
+import { ToastProvider } from 'react-native-toast-notifications'
 
 export default function App () {
   return (
-    <Provider store={store}>
-      <Initializer>
-        <View style={styles.container}>
-          <NavigationContainer>
-            <AuthNavigator />
-          </NavigationContainer>
-        </View>
-      </Initializer>
-    </Provider>
+    <ToastProvider>
+      <Provider store={store}>
+        <Initializer>
+          <View style={styles.container}>
+            <NavigationContainer>
+              <AuthNavigator />
+            </NavigationContainer>
+          </View>
+        </Initializer>
+      </Provider>
+    </ToastProvider>
   )
 }
 

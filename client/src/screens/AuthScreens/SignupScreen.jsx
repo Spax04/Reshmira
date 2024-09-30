@@ -12,8 +12,11 @@ import { COLORS, ROUTES, VARS } from '../../constants'
 // Import your logo image
 import LogoImage from '../../../assets/images/logo.png'
 import axios from 'axios'
+import { useToast } from 'react-native-toast-notifications'
 
 const SignupScreen = ({ navigation }) => {
+  const toast = useToast()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -23,7 +26,6 @@ const SignupScreen = ({ navigation }) => {
 
   const handleSignup = async () => {
     try {
-     
       if (
         fullName == '' ||
         email == '' ||
@@ -50,23 +52,36 @@ const SignupScreen = ({ navigation }) => {
       if (!response.data.success) {
         setInfoMessage(false)
         setMsg(response.data.msg)
+        toast.show(response.data.msg, {
+          type: 'danger',
+          placement: 'bottom',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in'
+        })
       } else {
         setInfoMessage(true)
-        setMsg(response.data.msg)
+        toast.show('Verification email has been sended', {
+          type: 'success',
+          placement: 'bottom',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in'
+        })
       }
     } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code
-        console.error('Server Error:', error.response.data);
-        setMsg('Server Error. Please try again later.');
+        console.error('Server Error:', error.response.data)
+        setMsg('Server Error. Please try again later.')
       } else if (error.request) {
         // The request was made but no response was received
-        console.error('No Response:', error.request);
-        setMsg('No response from server. Please check your connection.');
+        console.error('No Response:', error.request)
+        setMsg('No response from server. Please check your connection.')
       } else {
         // Something else happened in making the request
-        console.error('Error:', error.message);
-        setMsg('Error occurred while signing up.');
+        console.error('Error:', error.message)
+        setMsg('Error occurred while signing up.')
       }
     }
   }

@@ -8,7 +8,7 @@ export const RoomController = (router: any) => {
   router.post('/room/join', bodyParser(), joinRoom)
   router.post('/room/out', bodyParser(), leaveRoom)
   router.post('/room/delete', bodyParser(), deleteRoom)
-  router.post('/room/:roomId/users', bodyParser(), usersByRoomId)
+  router.get('/room/:roomId/users', bodyParser(), usersByRoomId)
   router.get('/room/:roomId', bodyParser(), getRoomById)
 }
 

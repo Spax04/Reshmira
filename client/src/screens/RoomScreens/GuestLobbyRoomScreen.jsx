@@ -11,16 +11,16 @@ import axios from 'axios'
 import { COLORS, ROUTES, VARS } from '../../constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { removeRoom, setRoomUsers } from '../../store/reducers/roomReducer'
+import { useToast } from 'react-native-toast-notifications'
 
 const GuestLobbyRoomScreen = ({ navigation }) => {
+  const toast = useToast()
+
   const [roomCode, setRoomCode] = useState('')
-  const [msg, setMsg] = useState('')
-  const [infoMessage, setInfoMessage] = useState(false)
   const [users, setUsers] = useState([])
   const [refreshing, setRefreshing] = useState(false)
   const room = useSelector(state => state.room)
   const user = useSelector(state => state.user)
-  const [errorMessage, setErrorMessage] = useState('')
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -33,7 +33,6 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
   }, [])
 
   const handleLeaveRoom = async () => {
-    setErrorMessage('')
 
     try {
       const { data: leaveRoomResponse } = await axios.post(
@@ -45,16 +44,27 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
           }
         }
       )
-      console.log(leaveRoomResponse)
 
       if (leaveRoomResponse.success) {
         dispatch(removeRoom())
         navigation.navigate(ROUTES.LOBBY_ROOM)
       } else {
-        setErrorMessage(leaveRoomResponse.msg)
+        toast.show(leaveRoomResponse.msg, {
+          type: 'danger',
+          placement: 'bottom',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in'
+        })
       }
     } catch (error) {
-      setErrorMessage('Error leaving the room.')
+      toast.show('Error leaving the room.', {
+        type: 'danger',
+        placement: 'bottom',
+        duration: 4000,
+        offset: 30,
+        animationType: 'slide-in'
+      })
     }
   }
 
@@ -62,17 +72,45 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
     setRefreshing(true)
     try {
       const { data: usersByRoomIdResponse } = await axios.get(
-        `${VARS.API_URL}/room/${room._id}/users`
+        `${VARS.API_URL}/room/${room._id}/users`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`
+          }
+        }
       )
       if (usersByRoomIdResponse.success) {
         setUsers(usersByRoomIdResponse.data)
         dispatch(setRoomUsers(usersByRoomIdResponse.data))
       } else {
-        setMsg('Failed to refresh users.')
+        if (usersByRoomIdResponse.data === null) {
+          toast.show('Room has been delted by Admin', {
+            type: 'warning',
+            placement: 'bottom',
+            duration: 4000,
+            offset: 30,
+            animationType: 'slide-in'
+          })
+
+          navigation.navigate(ROUTES.LOBBY_ROOM)
+        }
+        toast.show('Error on refresh users', {
+          type: 'danger',
+          placement: 'bottom',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in'
+        })
       }
     } catch (error) {
       console.error('Error refreshing users:', error)
-      setMsg('Error occurred while refreshing users.')
+      toast.show('Error occurred while refreshing users.', {
+        type: 'danger',
+        placement: 'bottom',
+        duration: 4000,
+        offset: 30,
+        animationType: 'slide-in'
+      })
     }
     setRefreshing(false)
   }
@@ -80,9 +118,6 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {errorMessage ? (
-          <Text style={styles.errorText}>{errorMessage}</Text>
-        ) : null}
 
         {roomCode ? (
           <Text style={styles.roomCode}>Room Code: {roomCode}</Text>
@@ -112,17 +147,6 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.leaveButton} onPress={handleLeaveRoom}>
           <Text style={styles.leaveButtonText}>Leave Room</Text>
         </TouchableOpacity>
-
-        {msg ? (
-          <View
-            style={[
-              styles.messageContainer,
-              { backgroundColor: infoMessage ? 'green' : 'red' }
-            ]}
-          >
-            <Text style={styles.messageText}>{msg}</Text>
-          </View>
-        ) : null}
       </View>
     </View>
   )
