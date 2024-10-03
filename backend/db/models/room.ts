@@ -9,9 +9,6 @@ const roomSchema = new Schema({
   updated_at: { type: Date, default: Date.now }
 })
 
-roomSchema.index({ secret: 1 }, { unique: true })
-roomSchema.index({ users: 1 })
-
 type Room = InferSchemaType<typeof roomSchema>
 type RoomWithId = Room & {
   _id: mongoose.Types.ObjectId
