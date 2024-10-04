@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { removeRoom, setRoomUsers } from "../../store/reducers/roomReducer";
 import { useToast } from "react-native-toast-notifications";
 import { removeUsersRoomId } from "../../store/reducers/userReducer";
+import api from "../../utils/requstInterceptor";
 
 const GuestLobbyRoomScreen = ({ navigation }) => {
   const toast = useToast();
@@ -74,13 +75,8 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const { data: usersByRoomIdResponse } = await axios.get(
+      const { data: usersByRoomIdResponse } = await api.get(
         `${VARS.API_URL}/room/${room._id}/users`,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
       );
       if (usersByRoomIdResponse.success) {
         setUsers(usersByRoomIdResponse.data);

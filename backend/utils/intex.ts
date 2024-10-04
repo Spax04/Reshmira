@@ -6,18 +6,27 @@ import * as nodemailer from 'nodemailer'
 
 export const generateAccessToken = (user: UserWithId) => {
   if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is not set')
+    throw new Error("JWT_SECRET environment variable is not set");
   }
 
   if (!process.env.ACCESS_TOKEN_EXPIRES_IN) {
-    throw new Error('ACCESS_TOKEN_EXPIRES_IN environment variable is not set')
+    throw new Error("ACCESS_TOKEN_EXPIRES_IN environment variable is not set");
   }
-  return jwt.sign(
-    { _id: user._id }, // add _id: user._id
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN }
-  )
-}
+
+  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+  });
+
+  // Optional: Verify the token immediately for debugging
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Token generated and verified successfully:", decoded);
+  } catch (error) {
+    console.error("Error verifying token:", error.message);
+  }
+
+  return token;
+};
 
 export const generateRefreshToken = (user: UserWithId): string => {
   return jwt.sign(
@@ -33,14 +42,7 @@ export const sendConfirmEmail = async (
   text: string
 ) => {
   try {
-    console.log(process.env.EMAIL_HOST)
-    console.log(process.env.EMAIL_PORT)
-    console.log(process.env.EMAIL_SECURE)
-    console.log(process.env.EMAIL_USER)
-    console.log(process.env.EMAIL_PASS)
-    console.log(email)
-    console.log(subject)
-    console.log(text)
+
 
     let transsporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,

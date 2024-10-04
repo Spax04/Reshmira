@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setUser, setUserToken } from "../../store/reducers/userReducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setRoom } from "../../store/reducers/roomReducer";
+import api from "../../utils/requstInterceptor";
 
 const LoginScreen = ({ navigation }) => {
   const toast = useToast();
@@ -62,7 +63,7 @@ const LoginScreen = ({ navigation }) => {
       }
 
       setLoading(true);
-      const { data: loginResponse } = await axios.post(
+      const { data: loginResponse } = await api.post(
         `${VARS.API_URL}/auth/login`,
         {
           email,
@@ -89,13 +90,9 @@ const LoginScreen = ({ navigation }) => {
 
         dispatch(setUserToken(loginResponse.data));
         try {
-          const { data: userSelfResponse } = await axios.get(
-            `${VARS.API_URL}/user`,
-            {
-              headers: {
-                Authorization: `Bearer ${loginResponse.data}`,
-              },
-            }
+          console.log(loginResponse.data);
+          const { data: userSelfResponse } = await api.get(
+            `${VARS.API_URL}/user`
           );
 
           if (!userSelfResponse.success) {
@@ -108,15 +105,11 @@ const LoginScreen = ({ navigation }) => {
             });
           } else {
             dispatch(setUser(userSelfResponse.data));
-
+            console.log(userSelfResponse.data.token);
+            
             if (userSelfResponse.data.room_id !== null) {
-              const { data: usersRoomData } = await axios.get(
-                `${VARS.API_URL}/room/${userSelfResponse.data.room_id}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${loginResponse.data}`,
-                  },
-                }
+              const { data: usersRoomData } = await api.get(
+                `${VARS.API_URL}/room/${userSelfResponse.data.room_id}`
               );
 
               if (usersRoomData.success) {
