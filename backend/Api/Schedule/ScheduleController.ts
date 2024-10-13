@@ -3,7 +3,7 @@ import { ScheduleService } from './ScheduleService';
 import {
   generateAccessToken,
   generateRefreshToken,
-  sendConfirmEmail,
+  sendEmail,
 } from '../../utils/intex';
 import * as bcrypt from 'bcryptjs';
 import { User } from '../../db/models/user';
@@ -24,7 +24,7 @@ export const ScheduleController = (router: any) => {
   router.post('/schedule/create', bodyParser(), createSchedule);
 };
 
-export async function createSchedule (ctx: any): Promise<any> {
+export async function createSchedule(ctx: any): Promise<any> {
   try {
     const { scheduleName, guards, positions, shiftTime, guardsPreShift } = ctx
       .request.body as CreateScheduleRequestBody;

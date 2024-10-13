@@ -3,7 +3,7 @@ import { UserService } from './UserService'
 import {
   generateAccessToken,
   generateRefreshToken,
-  sendConfirmEmail
+  sendEmail
 } from '../../utils/intex'
 import * as bcrypt from 'bcryptjs'
 import { User } from '../../db/models/user'
@@ -15,7 +15,7 @@ export const UserController = (router: any) => {
   router.post('/user/update', bodyParser(), updateUserDetails)
 }
 
-export async function getSelf (ctx: any): Promise<any> {
+export async function getSelf(ctx: any): Promise<any> {
   try {
     const authHeader = ctx.request.headers['authorization']
 
@@ -49,7 +49,7 @@ export async function getSelf (ctx: any): Promise<any> {
   }
 }
 
-export async function updateUserDetails (ctx: any): Promise<any> {
+export async function updateUserDetails(ctx: any): Promise<any> {
   try {
   } catch (err) {
     ctx.body = JSON.stringify({

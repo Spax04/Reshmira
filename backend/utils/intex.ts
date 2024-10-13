@@ -36,7 +36,21 @@ export const generateRefreshToken = (user: UserWithId): string => {
   )
 }
 
-export const sendConfirmEmail = async (
+export const generateResetToken = (user: UserWithId, secret: string): string => {
+
+  return jwt.sign(
+    { _id: user._id, resetCode: secret }, // add _id: user._id later (userWithId)
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.RESET_TOKEN_EXPIRES_IN }
+  )
+}
+
+export const generateRandom4DigitNumber = (): string => {
+  const randomNumber = Math.floor(1000 + Math.random() * 9000); // Generate a number between 1000 and 9999
+  return randomNumber.toString().padStart(4, '0'); // Ensure it's 4 digits (e.g., '0001')
+}
+
+export const sendEmail = async (
   email: string,
   subject: string,
   text: string
@@ -102,6 +116,6 @@ export const generateRoomCode = async (): Promise<string> => {
 module.exports = {
   generateAccessToken,
   generateRefreshToken,
-  sendConfirmEmail,
+  sendConfirmEmail: sendEmail,
   generateRoomCode
 }

@@ -3,7 +3,7 @@ import { ShiftService } from './ShiftService'
 import {
   generateAccessToken,
   generateRefreshToken,
-  sendConfirmEmail
+  sendEmail
 } from '../../utils/intex'
 import * as bcrypt from 'bcryptjs'
 import { User } from '../../db/models/user'
@@ -13,7 +13,7 @@ export const ShiftController = (router: any) => {
   router.post('/shift/create', bodyParser(), createShift)
 }
 
-export async function createShift (ctx: any): Promise<any> {
+export async function createShift(ctx: any): Promise<any> {
   try {
     const { scheduleName, guards, positions, shiftTime } = ctx.request.body
 

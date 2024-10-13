@@ -22,7 +22,8 @@ const userSchema = new Schema(
       required: false
     },
     shifts: [{ type: Schema.Types.ObjectId, ref: 'Shift' }],
-    refresh_token: { type: String, required: false }
+    refresh_token: { type: String, required: false },
+    reset_token: { type: String, required: false }
   },
   {
     timestamps: true
