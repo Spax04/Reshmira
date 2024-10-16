@@ -8,7 +8,8 @@ import * as bcrypt from "bcryptjs";
 import { generateAccessToken, generateRandom4DigitNumber, generateRefreshToken, generateResetToken, sendEmail } from "../../utils/intex";
 import * as jwt from "jsonwebtoken";
 export class AuthService {
-  sendConfirmEmail = async (user: UserWithId) => {
+  sendConfirmEmail =
+    async (user: UserWithId) => {
     try {
       // Generate the verification link
       const verificationLink = `${process.env.BASE_URL}/auth/verify-email/${generateAccessToken(user)}`;
@@ -24,6 +25,7 @@ export class AuthService {
         `Best regards,\nReshmira team`;
 
       // Send the email
+      console.log('About to send email...');
       await sendEmail(user.email, subject, text);
 
       return { success: true, msg: `Email sent successfully!` };

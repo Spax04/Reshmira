@@ -116,6 +116,8 @@ export const generateRoomCode = async (): Promise<string> => {
 module.exports = {
   generateAccessToken,
   generateRefreshToken,
-  sendConfirmEmail: sendEmail,
-  generateRoomCode
+  generateResetToken,
+  sendEmail,
+  generateRoomCode,
+  generateRandom4DigitNumber
 }

@@ -35,8 +35,9 @@ app.use(bodyParser({jsonLimit: '50mb'}));
 app.use(logCtx);
 app.use(responseTime({ hrtime: true }));
 app.use(session(sessionConfig, app));
+console.log("before PUBLIC ROATS");
 app.use(publicRoutes.routes());
-
+console.log("AFTER PUBLIC ROATS");
 app.use(tokenPresenceCheck);
 app.use(tokenValidatiionCheck);
 app.use(tokenExpirationCheck);

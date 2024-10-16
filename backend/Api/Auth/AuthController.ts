@@ -13,7 +13,7 @@ import { UserDal } from '../../dal/UserDal'
 export const AuthController = (router: any) => {
   router.post('/auth/login', bodyParser(), login)
   router.post('/auth/signup', bodyParser(), signup)
-  router.get('/auth/varify-email/:token', bodyParser(), confirmEmail)
+  router.get('/auth/verify-email/:token', bodyParser(), confirmEmail)
   router.post('/auth/forgot-password/', bodyParser(), forgotPassword)
   router.post('/auth/verify-code/', bodyParser(), verifyCode)
   router.post('/auth/reset-password', bodyParser(), resetPassword)
@@ -86,22 +86,24 @@ export async function signup(ctx: any): Promise<any> {
       ctx.status = 403
     }
 
+    console.log("Sending confirm email");
     const { success: varificationEmailSuccess, msg: verificationEmailMsg } = await new AuthService().sendConfirmEmail(createUserData)
-
     if (varificationEmailSuccess) {
       ctx.body = JSON.stringify({
         success: true,
-        msg: varificationEmailSuccess
+        msg: verificationEmailMsg
       })
       ctx.status = 200
     } else {
+      console.error(verificationEmailMsg);
       ctx.body = JSON.stringify({
         success: false,
-        msg: varificationEmailSuccess
+        msg: verificationEmailMsg
       })
       ctx.status = 500
     }
   } catch (err) {
+    console.error(err.message);
     ctx.body = JSON.stringify({
       success: false,
       msg: 'Internal server error: ' + err.message
@@ -112,7 +114,8 @@ export async function signup(ctx: any): Promise<any> {
 
 export async function confirmEmail(ctx: any): Promise<any> {
   console.log('in confirm')
-  const { token } = ctx.request.params // Assuming token is passed as a URL parameter
+  const { token } = ctx.request.params
+  console.log(token);// Assuming token is passed as a URL parameter
   try {
     const confirmResponse = await new AuthService().confirmValidationEmail(
       token
