@@ -106,7 +106,7 @@ const LoginScreen = ({ navigation }) => {
           } else {
             dispatch(setUser(userSelfResponse.data));
             console.log(userSelfResponse.data.token);
-            
+
             if (userSelfResponse.data.room_id !== null) {
               const { data: usersRoomData } = await api.get(
                 `${VARS.API_URL}/room/${userSelfResponse.data.room_id}`
@@ -131,7 +131,7 @@ const LoginScreen = ({ navigation }) => {
     } catch (error) {
       if (error.response) {
         console.error("Server Error:", error.response.data);
-        toast.show("Server Error. Please try again later.", {
+        toast.show(error.response.data.msg, {
           type: "danger",
           placement: "bottom",
           duration: 4000,
@@ -166,6 +166,10 @@ const LoginScreen = ({ navigation }) => {
     navigation.navigate(ROUTES.SIGNUP); // Navigate to SignupScreen
   };
 
+  const goToForgotPassword = () => {
+    navigation.navigate(ROUTES.FORGOT_PASSWORD)
+  }
+
   return (
     <View style={styles.container}>
       <Image source={LogoImage} style={styles.logo} />
@@ -189,6 +193,11 @@ const LoginScreen = ({ navigation }) => {
       <TouchableOpacity onPress={goToSignup}>
         <Text style={styles.signupLink}>
           Don't have an account? Sign up here
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={goToForgotPassword}>
+        <Text style={styles.signupLink}>
+          Forgot password?
         </Text>
       </TouchableOpacity>
     </View>

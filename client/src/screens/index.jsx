@@ -1,6 +1,6 @@
 export { default as LoginScreen } from './AuthScreens/LoginScreen'
 export { default as SignupScreen } from './AuthScreens/SignupScreen'
-export { default as ForgotScreen } from './AuthScreens/ForgotScreen'
+export { default as ForgotScreen } from './AuthScreens/ForgotPassword/ForgotScreen'
 //PAY ATTANTION
 export { default as UsersShifts } from './MainScreens/UsersShifts'
 export { default as GroupShifts } from './MainScreens/GroupShifts'

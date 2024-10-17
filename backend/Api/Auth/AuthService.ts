@@ -10,29 +10,29 @@ import * as jwt from "jsonwebtoken";
 export class AuthService {
   sendConfirmEmail =
     async (user: UserWithId) => {
-    try {
-      // Generate the verification link
-      const verificationLink = `${process.env.BASE_URL}/auth/verify-email/${generateAccessToken(user)}`;
+      try {
+        // Generate the verification link
+        const verificationLink = `${process.env.BASE_URL}/auth/verify-email/${generateAccessToken(user)}`;
 
-      // Email subject
-      const subject = "Email Verification";
+        // Email subject
+        const subject = "Email Verification";
 
-      // Email text including a subtitle and the verification link
-      const text = `Dear ${user.full_name},\n\n` +
-        `Thank you for registering. Please verify your email address by clicking the link below:\n\n` +
-        `Verification Link: ${verificationLink}\n\n` +
-        `If you did not create this account, please ignore this email.\n\n` +
-        `Best regards,\nReshmira team`;
+        // Email text including a subtitle and the verification link
+        const text = `Dear ${user.full_name},\n\n` +
+          `Thank you for registering. Please verify your email address by clicking the link below:\n\n` +
+          `Verification Link: ${verificationLink}\n\n` +
+          `If you did not create this account, please ignore this email.\n\n` +
+          `Best regards,\nReshmira team`;
 
-      // Send the email
-      console.log('About to send email...');
-      await sendEmail(user.email, subject, text);
+        // Send the email
+        console.log('About to send email...');
+        await sendEmail(user.email, subject, text);
 
-      return { success: true, msg: `Email sent successfully!` };
-    } catch (err) {
-      return { success: false, msg: `Email send error: ` + err.message };
-    }
-  };
+        return { success: true, msg: `Email sent successfully!` };
+      } catch (err) {
+        return { success: false, msg: `Email send error: ` + err.message };
+      }
+    };
 
 
   authenticate = async (password: string, user: UserWithId) => {
@@ -55,8 +55,13 @@ export class AuthService {
         msg: "Access token has been created",
         data: accessToken,
       };
+    } else {
+      return {
+        success: false,
+        msg: "Wrong email or password, try again!",
+      };
     }
-  };
+  }
 
   registrateNewUser = async (
     email: string,
@@ -83,16 +88,11 @@ export class AuthService {
   };
 
   resetUserPassword = async (
-    token: string, newPassword: string
+    userId: string, newPassword: string
   ) => {
 
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded || !decoded._id) {
-      return { success: false, msg: "Provided token not validated", code: 401 };
-    }
-
     try {
-      const { success: userResponseSuccess, data: userResponseData, msg: userResponseMsg } = await new UserDal().getUserById(decoded._id);
+      const { success: userResponseSuccess, data: userResponseData, msg: userResponseMsg } = await new UserDal().getUserById(new mongoose.Types.ObjectId(userId));
 
       if (!userResponseSuccess)
         return { success: false, msg: "User Not Found", code: 404 };
@@ -102,7 +102,7 @@ export class AuthService {
 
       userResponseData.password = hashedPassword
 
-      await new UserDal().updateUser(decoded._id, userResponseData);
+      await new UserDal().updateUser(new mongoose.Types.ObjectId(userId), userResponseData);
 
       return {
         success: true,
@@ -146,33 +146,21 @@ export class AuthService {
     }
   };
 
-  sendResetCode = async (token: string, email: string) => {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded || !decoded._id) {
-      return { success: false, msg: "Providet token not valided", code: 401 };
-    }
+  sendResetCode = async (user: UserWithId, email: string) => {
 
     try {
+      const secretCode = generateRandom4DigitNumber()
+      user.reset_token = generateResetToken(user, secretCode);
 
-      const { success: userResponseSuccess, data: userResponseData, msg: userResponseMsg } = await new UserDal().getUserById(decoded._id);
+      const emailText = `Dear user, \n\nWe have received a request to reset your password. Please use the following secret code to proceed with the reset:\n\nReset Code: ${secretCode}\n\nIf you did not request a password reset, please ignore this email.`;
+      await sendEmail(email, "Reset Password Request", emailText)
 
-      if (!userResponseSuccess) {
 
-        return { success: false, msg: "User Not Found", code: 404 };
-
-      } else {
-
-        const secretCode = generateRandom4DigitNumber()
-        userResponseData.reset_token = generateResetToken(userResponseData, secretCode);
-
-        const emailText = `Dear user, \n\nWe have received a request to reset your password. Please use the following secret code to proceed with the reset:\n\nReset Code: ${secretCode}\n\nIf you did not request a password reset, please ignore this email.`;
-        await sendEmail(email, "Reset Password Request", emailText)
-      }
-
-      await new UserDal().updateUser(decoded._id, userResponseData);
+      await new UserDal().updateUser(user._id, user);
 
       return { success: true, msg: "Email with verification code has been sended!" };
     } catch (err) {
+      console.error(err.message);
       return {
         success: true,
         msg: "Internal server error: " + err.message,
@@ -181,14 +169,10 @@ export class AuthService {
     }
   };
 
-  verifyResetCode = async (token: string, code: string) => {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded || !decoded._id) {
-      return { success: false, msg: "Provided token not validated", code: 401 };
-    }
+  verifyResetCode = async (userId: string, code: string) => {
 
     try {
-      const { success: userResponseSuccess, data: userResponseData, msg: userResponseMsg } = await new UserDal().getUserById(decoded._id);
+      const { success: userResponseSuccess, data: userResponseData, msg: userResponseMsg } = await new UserDal().getUserById(new mongoose.Types.ObjectId(userId));
 
       if (!userResponseSuccess) {
         return { success: false, msg: "User Not Found", code: 404 };
@@ -208,7 +192,7 @@ export class AuthService {
           }
 
           // If everything matches and token is valid, continue
-          return { success: true, msg: "Reset code verified successfully" };
+          return { success: true, msg: "Reset code verified successfully", data: { userId: userResponseData._id } };
         } catch (error) {
           if (error.name === 'TokenExpiredError') {
             return { success: false, msg: "Reset token has expired", code: 401 };

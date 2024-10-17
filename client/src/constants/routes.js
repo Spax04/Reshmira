@@ -3,6 +3,8 @@ export default {
   LOGIN: 'login',
   SIGNUP: 'signup',
   FORGOT_PASSWORD: 'forgot password',
+  VERIFY_EMAIL: 'verify email',
+  RESET_PASSWORD: 'reset password',
 
   HOME: 'home',
   HOME_DRAWER: 'home drawer',

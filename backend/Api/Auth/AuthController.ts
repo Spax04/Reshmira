@@ -63,7 +63,7 @@ export async function login(ctx: any): Promise<any> {
       ctx.status = 404
     }
   } catch (err) {
-    console.error('Error in Sign In', err)
+    console.error('Error in Login', err)
     ctx.body = JSON.stringify({
       success: false,
       msg: 'User with this email does not exist: ' + err
@@ -148,25 +148,23 @@ export async function forgotPassword(ctx: any): Promise<any> {
 
   const { email } = ctx.request.body
   try {
-    const authHeader = ctx.request.headers['authorization'];
-    let token;
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
-    } else {
-      ctx.status = 401;
+    const { success: userByEmailSuccess, data: userByEmailData, msg: userByEmailMsg } = await new UserDal().getUserByEmail(email)
+    console.log("Got user by email");
+
+    if (!userByEmailSuccess) {
       ctx.body = JSON.stringify({
         success: false,
-        msg: 'Authorization token missing or malformed'
-      });
-      return;
+        msg: userByEmailMsg
+      })
+      ctx.status = 404
     }
-
-    const { success: sendResetCodeSuccess, msg: sendResetCodeMsg } = await new AuthService().sendResetCode(token, email)
+    const { success: sendResetCodeSuccess, msg: sendResetCodeMsg } = await new AuthService().sendResetCode(userByEmailData, email)
 
     if (sendResetCodeSuccess) {
       ctx.body = JSON.stringify({
         success: true,
+        data: { userId: userByEmailData._id },
         msg: sendResetCodeMsg
       })
       ctx.status = 200
@@ -189,32 +187,22 @@ export async function forgotPassword(ctx: any): Promise<any> {
 
 export async function verifyCode(ctx: any): Promise<any> {
 
-  const { code } = ctx.request.body
+  const { code, userId } = ctx.request.body
   try {
 
-    const authHeader = ctx.request.headers['authorization'];
-    let token;
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
-    } else {
-      ctx.status = 401;
-      ctx.body = JSON.stringify({
-        success: false,
-        msg: 'Authorization token missing or malformed'
-      });
-      return;
-    }
-    const { success: verifyCodeSuccess, msg: verifyCodeMsg } = await new AuthService().verifyResetCode(token, code)
+    const { success: verifyCodeSuccess, msg: verifyCodeMsg } = await new AuthService().verifyResetCode(userId, code)
 
 
     if (verifyCodeSuccess) {
       ctx.body = JSON.stringify({
         success: true,
-        msg: verifyCodeMsg
+        msg: verifyCodeMsg,
+        data: { userId }
       })
       ctx.status = 200
     } else {
+      console.log(verifyCodeMsg);
       ctx.body = JSON.stringify({
         success: false,
         msg: verifyCodeMsg
@@ -233,23 +221,11 @@ export async function verifyCode(ctx: any): Promise<any> {
 
 export async function resetPassword(ctx: any): Promise<any> {
 
-  const { newPassword } = ctx.request.body
+  const { userId, newPassword } = ctx.request.body
   try {
 
-    const authHeader = ctx.request.headers['authorization'];
-    let token;
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
-    } else {
-      ctx.status = 401;
-      ctx.body = JSON.stringify({
-        success: false,
-        msg: 'Authorization token missing or malformed'
-      });
-      return;
-    }
-    const { success: resetPasswordSuccess, msg: resetPasswordMsg } = await new AuthService().resetUserPassword(token, newPassword)
+    const { success: resetPasswordSuccess, msg: resetPasswordMsg } = await new AuthService().resetUserPassword(userId, newPassword)
 
 
     if (resetPasswordSuccess) {
@@ -259,6 +235,7 @@ export async function resetPassword(ctx: any): Promise<any> {
       })
       ctx.status = 200
     } else {
+      console.error(resetPasswordMsg);
       ctx.body = JSON.stringify({
         success: false,
         msg: resetPasswordMsg
