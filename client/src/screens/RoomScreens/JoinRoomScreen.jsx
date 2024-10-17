@@ -71,7 +71,7 @@ const JoinRoomScreen = () => {
     } catch (error) {
       if (error.response) {
         console.error("Server Error:", error.response.data);
-        toast.show("Server Error. Please try again later.", {
+        toast.show(error.response.data.msg, {
           type: "danger",
           placement: "bottom",
           duration: 4000,
