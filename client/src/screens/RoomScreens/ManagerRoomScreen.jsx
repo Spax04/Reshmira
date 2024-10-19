@@ -25,122 +25,120 @@ const ManagerRoomScreen = ({ navigation }) => {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
-  const [isSettingsVisible, setIsSettingsVisible] = useState(false);
   const [scheduleName, setScheduleName] = useState("");
-  const [shiftLength, setShiftLength] = useState("");
 
-  const [position, setPosition] = useState([]);
+  const [positionList, setPositionList] = useState([]);
+  const [time, setTime] = useState(new Date()) // Set hours, minutes, seconds, and milliseconds to zero
+const [showTimePicker, setShowTimePicker] = useState(false);
+
+const [showModal, setShowModal] = useState(false); // Controls the modal visibility
+
+// States for new position input
+const [newPositionName, setNewPositionName] = useState("");
+const [newGuardPrePosition, setNewGuardPrePosition] = useState("");
+
+useEffect(() => {
+  if (user._id === room.adminId && room.adminId !== "") {
+    console.log("Correct admin");
+
+    setUsers(room.users);
+    setRoomCode(room.secret);
+  } else {
+    navigation.navigate(ROUTES.LOBBY_ROOM);
+  }
+}, []);
 
 
-  // States for new position input
-  const [newPositionName, setNewPositionName] = useState("");
-  const [newGuardPrePosition, setNewGuardPrePosition] = useState("");
 
-  useEffect(() => {
-    if (user._id === room.adminId && room.adminId !== "") {
-      console.log("Correct admin");
+const addPosition = () => {
+  if (newPositionName && newGuardPrePosition) {
+    const newPosition = {
+      position_name: newPositionName,
+      guard_pre_position: parseInt(newGuardPrePosition), // Convert to number
+    };
 
-      setUsers(room.users);
-      setRoomCode(room.secret);
-    } else {
-      navigation.navigate(ROUTES.LOBBY_ROOM);
-    }
-  }, []);
+    setPositionList((prevPositions) => [...prevPositions, newPosition]);
 
-  const toggleSettings = () => {
-    setIsSettingsVisible(!isSettingsVisible);
-  };
+    // Clear input fields after adding
+    setNewPositionName("");
+    setNewGuardPrePosition("");
+  } else {
+    toast.show("Please enter valid position details.", {
+      type: "warning",
+      placement: "bottom",
+      duration: 4000,
+      offset: 30,
+      animationType: "slide-in",
+    });
+  }
+};
+const handleDeleteRoom = async () => {
+  dispatch(removeRoom());
+  navigation.navigate(ROUTES.LOBBY_ROOM);
 
-  const addPosition = () => {
-    if (newPositionName && newGuardPrePosition) {
-      const newPosition = {
-        positionName: newPositionName,
-        guardPrePosition: parseInt(newGuardPrePosition), // Convert to number
-      };
+  try {
+    const { data: roomDeleteResponse } = await api.post(`${VARS.API_URL}/room/delete`, { roomId: room._id },);
+    console.log(roomDeleteResponse);
 
-      setPosition((prevPositions) => [...prevPositions, newPosition]);
-
-      // Clear input fields after adding
-      setNewPositionName("");
-      setNewGuardPrePosition("");
-    } else {
-      toast.show("Please enter valid position details.", {
+    if (!roomDeleteResponse.success) {
+      toast.show("Error on deleting room.", {
         type: "warning",
         placement: "bottom",
         duration: 4000,
         offset: 30,
         animationType: "slide-in",
       });
+    } else {
+      toast.show("Room was deleted successfully!", {
+        type: "success",
+        placement: "bottom",
+        duration: 4000,
+        offset: 30,
+        animationType: "slide-in",
+      });
+      navigation.navigate(ROUTES.LOBBY_ROOM);
     }
-  };
-  const handleDeleteRoom = async () => {
-    dispatch(removeRoom());
-    navigation.navigate(ROUTES.LOBBY_ROOM);
+  } catch { }
+};
 
-    try {
-      const { data: roomDeleteResponse } = await axios.post(
-        `${VARS.API_URL}/room/delete`,
-        { roomId: room._id },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
-      console.log(roomDeleteResponse);
+const handleCreateSchedule = async () => {
 
-      if (!roomDeleteResponse.success) {
-        toast.show("Error on deleting room.", {
-          type: "warning",
-          placement: "bottom",
-          duration: 4000,
-          offset: 30,
-          animationType: "slide-in",
-        });
-      } else {
-        toast.show("Room was deleted successfully!", {
-          type: "success",
-          placement: "bottom",
-          duration: 4000,
-          offset: 30,
-          animationType: "slide-in",
-        });
-        navigation.navigate(ROUTES.LOBBY_ROOM);
+  const totalGuardsPreShift = positionList.reduce((total, pos) => total + pos.guardPrePosition, 0);
+
+  const newSchedule = {
+    scheduleName: scheduleName,
+    positions: positionList,
+    guards: users,
+    shiftTime: time,
+    guardsPreShift: totalGuardsPreShift
+  }
+  console.log("Schedule name: " + scheduleName);
+  console.log("positions: " + [...positionList]);
+  console.log("Guards: " + [...users]);
+  console.log("Shift time: " + time);
+  console.log("Guards pre shift: " + totalGuardsPreShift);
+
+
+  console.log({ ...newSchedule });
+  // const { success: createCheduleSeccess, data: createScheduleData, msg: createScheduleMsg } = await api.post(VARS.API_URL,)
+};
+
+const onRefresh = async () => {
+  setRefreshing(true);
+  try {
+    const { data: usersByRoomIdResponse } = await axios.get(
+      `${VARS.API_URL}/room/${room._id}/users`,
+      {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
       }
-    } catch { }
-  };
-
-  const handleCreateSchedule = async () => {
-    const { success: createCheduleSeccess, data: createScheduleData, msg: createScheduleMsg } = await api.post(VARS.API_URL,)
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      const { data: usersByRoomIdResponse } = await axios.get(
-        `${VARS.API_URL}/room/${room._id}/users`,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
-      if (usersByRoomIdResponse.success) {
-        setUsers(usersByRoomIdResponse.data);
-        dispatch(setRoomUsers(usersByRoomIdResponse.data));
-      } else {
-        setMsg("Failed to refresh users.");
-        toast.show("Failed to refresh users.", {
-          type: "danger",
-          placement: "bottom",
-          duration: 4000,
-          offset: 30,
-          animationType: "slide-in",
-        });
-      }
-    } catch (error) {
-      console.error("Error refreshing users:", error);
-      toast.show("Error refreshing users: " + error, {
+    );
+    if (usersByRoomIdResponse.success) {
+      setUsers(usersByRoomIdResponse.data);
+      dispatch(setRoomUsers(usersByRoomIdResponse.data));
+    } else {
+      toast.show("Failed to refresh users.", {
         type: "danger",
         placement: "bottom",
         duration: 4000,
@@ -148,36 +146,36 @@ const ManagerRoomScreen = ({ navigation }) => {
         animationType: "slide-in",
       });
     }
-    setRefreshing(false);
-  };
-  const handleRemoveUser = async (userId) => {
-    try {
-      const { data: removeUserResponse } = await api.post(`${VARS.API_URL}/room/out`, { secret: room.secret, participantId: userId },);
+  } catch (error) {
+    console.error("Error refreshing users:", error);
+    toast.show("Error refreshing users: " + error, {
+      type: "danger",
+      placement: "bottom",
+      duration: 4000,
+      offset: 30,
+      animationType: "slide-in",
+    });
+  }
+  setRefreshing(false);
+};
+const handleRemoveUser = async (userId) => {
+  try {
+    const { data: removeUserResponse } = await api.post(`${VARS.API_URL}/room/out`, { secret: room.secret, participantId: userId },);
 
-      if (removeUserResponse.success) {
-        // Filter out the removed user from local state
-        const updatedUsers = users.filter((user) => user._id !== userId);
-        setUsers(updatedUsers);
-        dispatch(setRoomUsers(updatedUsers)); // Update Redux state
-        toast.show("User removed successfully.", {
-          type: "success",
-          placement: "bottom",
-          duration: 4000,
-          offset: 30,
-          animationType: "slide-in",
-        });
-      } else {
-        toast.show(removeUserResponse.msg, {
-          type: "danger",
-          placement: "bottom",
-          duration: 4000,
-          offset: 30,
-          animationType: "slide-in",
-        });
-      }
-    } catch (error) {
-      console.error("Error removing user:", error);
-      toast.show("Error occurred while removing user.", {
+    if (removeUserResponse.success) {
+      // Filter out the removed user from local state
+      const updatedUsers = users.filter((user) => user._id !== userId);
+      setUsers(updatedUsers);
+      dispatch(setRoomUsers(updatedUsers)); // Update Redux state
+      toast.show("User removed successfully.", {
+        type: "success",
+        placement: "bottom",
+        duration: 4000,
+        offset: 30,
+        animationType: "slide-in",
+      });
+    } else {
+      toast.show(removeUserResponse.msg, {
         type: "danger",
         placement: "bottom",
         duration: 4000,
@@ -185,97 +183,133 @@ const ManagerRoomScreen = ({ navigation }) => {
         animationType: "slide-in",
       });
     }
-  };
+  } catch (error) {
+    console.error("Error removing user:", error);
+    toast.show("Error occurred while removing user.", {
+      type: "danger",
+      placement: "bottom",
+      duration: 4000,
+      offset: 30,
+      animationType: "slide-in",
+    });
+  }
+};
 
-  const renderPositions = () => {
-    return (
-      <View style={styles.positionContainer}>
-        <Text style={styles.sectionTitle}>Position List</Text>
-        {position.map((pos, index) => (
-          <View key={index} style={styles.positionItem}>
-            <View style={styles.positionInfo}>
-              <Text style={styles.positionName}>{pos.positionName}</Text>
+const renderPositions = () => {
+  return (
+    <View style={styles.positionContainer}>
+      <Text style={styles.sectionTitle}>Position List</Text>
+      {positionList.map((pos, index) => (
+        <View key={index} style={styles.positionItem}>
+          <View style={styles.positionInfo}>
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => deletePosition(index)}
+            >
+              <AntDesign name="closesquare" size={24} color={COLORS.mainRed} />
+            </TouchableOpacity>
+
+            <View style={styles.positionDetails}>
+              <Text style={styles.positionName}>{pos.position_name}</Text>
               <Text style={styles.positionGuards}>
-                {pos.guardPrePosition} {pos.guardPrePosition > 1 ? 'Guards' : 'Guard'}
+                {pos.guard_pre_position} {pos.guard_pre_position > 1 ? 'Guards' : 'Guard'}
               </Text>
             </View>
           </View>
-        ))}
-      </View>
-    );
+        </View>
+      ))}
+    </View>
+  );
+};
+
+
+
+
+// Handler for time picker
+const onTimeChange = (event, selectedTime) => {
+  const currentTime = selectedTime || time;
+  setTime(currentTime);
+  if (Platform.OS === 'android') {
+    setShowModal(false); // Close modal when time is picked on Android
+  }
+};
+
+// Close the modal manually for iOS after time is picked
+const closeModal = () => {
+  setShowModal(false);
+};
+const formatTime = (time) => {
+  return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+const deletePosition = (index) => {
+  setPositionList((prevPositions) => {
+    return prevPositions.filter((_, i) => i !== index);
+  });
+};
+
+useEffect(() => {
+  const updateUserList = async () => {
+    await onRefresh();
   };
+  updateUserList();
+}, []);
 
-  const [time, setTime] = useState(new Date()); // Default to current time
-  const [showTimePicker, setShowTimePicker] = useState(false);
+return (
+  <View style={styles.container}>
+    <View style={styles.content}>
+      {roomCode ? (
+        <Text style={styles.roomCode}>Room Code: {roomCode}</Text>
+      ) : null}
 
-  const [showModal, setShowModal] = useState(false); // Controls the modal visibility
+      <TouchableOpacity style={styles.button} onPress={handleCreateSchedule}>
+        <Text style={styles.buttonText}>Create Schedule</Text>
+      </TouchableOpacity>
 
-  // Handler for time picker
-  const onTimeChange = (event, selectedTime) => {
-    const currentTime = selectedTime || time;
-    setTime(currentTime);
-    if (Platform.OS === 'android') {
-      setShowModal(false); // Close modal when time is picked on Android
-    }
-  };
+      <FlatList
+        style={styles.flatList}
+        data={users}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={(item, index) => index.toString()}
+        ListHeaderComponent={
+          <View >
+            <View style={styles.settingsContainer}>
+              <Text style={styles.label}>Schedule Name:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter schedule name"
+                value={scheduleName}
+                onChangeText={setScheduleName}
+              />
 
-  // Close the modal manually for iOS after time is picked
-  const closeModal = () => {
-    setShowModal(false);
-  };
-  const formatTime = (time) => {
-    return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+              <Text style={styles.label}>Select Shift Time:</Text>
+              <TouchableOpacity
+                style={styles.selectInput}
+                onPress={() => setShowModal(true)}
+              >
+                <Text style={styles.selectText}>{formatTime(time)}</Text>
+              </TouchableOpacity>
 
-  useEffect(() => {
-    const updateUserList = async () => {
-      await onRefresh();
-    };
-    updateUserList();
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-
-
-        {roomCode ? (
-          <Text style={styles.roomCode}>Room Code: {roomCode}</Text>
-        ) : null}
-        <TouchableOpacity style={styles.button} onPress={handleCreateSchedule}>
-          <Text style={styles.buttonText}>Create Schedule</Text>
-        </TouchableOpacity>
-
-
-        <ScrollView style={styles.settingsContainer}>
-          <ScrollView style={styles.settingsContainer}>
-            <Text style={styles.label}>Schedule Name:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter schedule name"
-              value={scheduleName}
-              onChangeText={setScheduleName}
-            />
-
-            <Text style={styles.label}>Select Shift Time:</Text>
-            <TouchableOpacity
-              style={styles.selectInput} // Different style for Touchable
-              onPress={() => setShowModal(true)}
-            >
-              <Text style={styles.selectText}>{formatTime(time)}</Text>
-            </TouchableOpacity>
-
-            <Modal
-              transparent={true}
-              animationType="slide"
-              visible={showModal}
-              onRequestClose={() => setShowModal(false)}
-            >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  {/* Time Picker */}
-                  {Platform.OS === 'ios' && (
-                    <View style={styles.pickerContainer}>
+              <Modal
+                transparent={true}
+                animationType="slide"
+                visible={showModal}
+                onRequestClose={() => setShowModal(false)}
+              >
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalContent}>
+                    {Platform.OS === 'ios' && (
+                      <View style={styles.pickerContainer}>
+                        <DateTimePicker
+                          value={time}
+                          mode="time"
+                          is24Hour={true}
+                          display="spinner"
+                          onChange={onTimeChange}
+                          minuteInterval={15}
+                        />
+                      </View>
+                    )}
+                    {Platform.OS === 'android' && showTimePicker && (
                       <DateTimePicker
                         value={time}
                         mode="time"
@@ -283,100 +317,85 @@ const ManagerRoomScreen = ({ navigation }) => {
                         display="spinner"
                         onChange={onTimeChange}
                       />
-                    </View>
-                  )}
-
-                  {Platform.OS === 'android' && showTimePicker && (
-                    <DateTimePicker
-                      value={time}
-                      mode="time"
-                      is24Hour={true}
-                      display="spinner"
-                      onChange={onTimeChange}
-                    />
-                  )}
-
-                  {/* Close Button for iOS */}
-                  {Platform.OS === 'ios' && (
-                    <TouchableOpacity style={styles.modalButton} onPress={closeModal}>
-                      <Text style={styles.modalButtonText}>Done</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            </Modal>
-
-            <Text style={styles.sectionTitle}>Add New Position</Text>
-
-            <Text style={styles.label}>Position Name:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter position name"
-              value={newPositionName}
-              onChangeText={setNewPositionName}
-            />
-
-            <Text style={styles.label}>Number of Guards:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter number of guards"
-              keyboardType="numeric"
-              value={newGuardPrePosition}
-              onChangeText={setNewGuardPrePosition}
-            />
-
-            <TouchableOpacity style={styles.submitButton} onPress={addPosition}>
-              <Text style={styles.submitButtonText}>Add Position</Text>
-            </TouchableOpacity>
-          </ScrollView>
-
-
-          {roomCode ? (
-            <>
-              {renderPositions()}
-              <Text style={styles.usersHeader}>
-                Connected Users ({users.length}) :
-              </Text>
-              <FlatList
-                style={styles.flatList}
-                data={users}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <View style={styles.userItem}>
-                    <View style={styles.userInfoContainer}>
-                      <Text style={styles.userName}>{item.fullName}</Text>
-                      {item._id !== user._id && ( // Show remove button if it's not the admin
-                        <TouchableOpacity
-                          style={styles.removeButton}
-                          onPress={() => handleRemoveUser(item._id)}
-                        >
-                          <AntDesign
-                            name="closesquare"
-                            size={24}
-                            color={COLORS.mainRed}
-                          />
-                        </TouchableOpacity>
-                      )}
-                    </View>
+                    )}
+                    {Platform.OS === 'ios' && (
+                      <TouchableOpacity
+                        style={styles.modalButton}
+                        onPress={closeModal}
+                      >
+                        <Text style={styles.modalButtonText}>Done</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
-                )}
-                ListEmptyComponent={<Text>No Users Connected</Text>}
-                refreshControl={
-                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
+                </View>
+              </Modal>
+
+              <Text style={styles.sectionTitle}>Add New Position</Text>
+              <Text style={styles.label}>Position Name:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter position name"
+                value={newPositionName}
+                onChangeText={setNewPositionName}
               />
-            </>
-          ) : null}
-        </ScrollView>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={handleDeleteRoom}
-        >
-          <Text style={styles.deleteButtonText}>Delete Room</Text>
-        </TouchableOpacity>
-      </View>
+
+              <Text style={styles.label}>Number of Guards:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter number of guards"
+                keyboardType="numeric"
+                value={newGuardPrePosition}
+                onChangeText={setNewGuardPrePosition}
+              />
+
+              <TouchableOpacity style={styles.submitButton} onPress={addPosition}>
+                <Text style={styles.submitButtonText}>Add Position</Text>
+              </TouchableOpacity>
+
+            </View>
+            {renderPositions()}
+
+            <Text style={styles.usersHeader}>
+              Connected Users ({users.length}) :
+            </Text>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.userItem}>
+            <View style={styles.userInfoContainer}>
+              <Text style={styles.userName}>{item.fullName}</Text>
+              {item._id !== user._id && (
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => handleRemoveUser(item._id)}
+                >
+                  <AntDesign
+                    name="closesquare"
+                    size={24}
+                    color={COLORS.mainRed}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
+        ListEmptyComponent={<Text>No Users Connected</Text>}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListFooterComponent={
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={handleDeleteRoom}
+          >
+            <Text style={styles.deleteButtonText}>Delete Room</Text>
+          </TouchableOpacity>
+        }
+      />
     </View>
-  );
+  </View>
+
+);
 };
 
 export default ManagerRoomScreen;
@@ -384,16 +403,15 @@ export default ManagerRoomScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: "#f0f0f0",
   },
   content: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 50,
-    marginLeft: 40,
-    marginRight: 40,
+    marginTop: 25,
+    marginLeft: 35,
+    marginRight: 35,
   },
   pickerContainer: {
     marginBottom: 20,
@@ -421,19 +439,43 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 5,
     marginBottom: 20,
+    marginTop: 20
   },
+
   positionContainer: {
-    padding: 10,
+    marginTop: 20,
+    paddingHorizontal: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   positionItem: {
-    paddingVertical: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderColor: COLORS.lightGray,
+    borderBottomColor: '#ddd',
   },
-  positionText: {
+  positionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  removeButton: {
+    marginRight: 10,
+  },
+  positionDetails: {
+    flexDirection: 'column',
+  },
+  positionName: {
     fontSize: 16,
-    color: COLORS.darkGray,
+    fontWeight: 'bold',
+  },
+  positionGuards: {
+    fontSize: 14,
+    color: '#666',
   },
   deleteButtonText: {
     color: COLORS.whiteText,
@@ -446,7 +488,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   usersHeader: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
     color: "#444",
@@ -473,7 +515,10 @@ const styles = StyleSheet.create({
     alignItems: "center", // Center items vertically
     justifyContent: "space-between", // Distribute space evenly
   },
-  flatList: { width: "90%" }, toggleButton: {
+  flatList: {
+    width: "90%"
+  },
+  toggleButton: {
     backgroundColor: "#4CAF50",
     padding: 15,
     borderRadius: 5,
@@ -493,9 +538,11 @@ const styles = StyleSheet.create({
 
 
   settingsContainer: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#f8f9fa", // Light background for better contrast
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    width: "100%",
+    padding: 15
+    // Light background for better contrast
   },
   label: {
     fontSize: 18,

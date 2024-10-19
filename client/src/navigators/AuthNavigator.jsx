@@ -13,7 +13,8 @@ const AuthNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: false
+        headerShown: false,
+        gestureEnabled: false
       }}
       initialRouteName={ROUTES.LOGIN}
     >
