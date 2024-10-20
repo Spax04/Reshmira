@@ -15,7 +15,7 @@ export class ScheduleService {
     scheduleId: string,
     guardsPreShift: number,
     guards: mongoose.Types.ObjectId[],
-    positions: { position_name: string; guards_pre_position: number }[],
+    positions: { position_name: string; guard_pre_position: number }[],
     shiftTime: number // epoch format (seconds)
   ) => {
     try {
@@ -34,7 +34,7 @@ export class ScheduleService {
         for (let i = 0; i < positions.length; i++) {
           let guardsIds: mongoose.Types.ObjectId[] = []
 
-          for (let j = 0; j < positions[i].guards_pre_position; j++) {
+          for (let j = 0; j < positions[i].guard_pre_position; j++) {
             let guardId = guards.shift()
             if (guardId) {
               guardsIds.push(guardId)
@@ -45,7 +45,7 @@ export class ScheduleService {
           const newGuardPost: GuardAssignment = {
             guards_id: guardsIds,
             position_name: positions[i].position_name,
-            guards_pre_position: positions[i].guards_pre_position
+            guards_pre_position: positions[i].guard_pre_position
           }
 
           guardPosts.push(newGuardPost)

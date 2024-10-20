@@ -9,6 +9,8 @@ export const generateAccessToken = (user: UserWithId) => {
     throw new Error("JWT_SECRET environment variable is not set");
   }
 
+  
+
   if (!process.env.ACCESS_TOKEN_EXPIRES_IN) {
     throw new Error("ACCESS_TOKEN_EXPIRES_IN environment variable is not set");
   }
