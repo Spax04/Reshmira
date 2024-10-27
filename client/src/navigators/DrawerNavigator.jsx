@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux'
 import { removeUser } from '../store/reducers/userReducer'
 import { useDispatch } from 'react-redux'
 import { removeRoom } from '../store/reducers/roomReducer'
+import { scheduleRemove } from '../store/reducers/scheduleReducer'
 
 const Drawer = createDrawerNavigator()
 
@@ -30,6 +31,7 @@ const CustomDrawerContent = props => {
         onPress={() => {
           dispatch(removeUser())
           dispatch(removeRoom())
+          dispatch(scheduleRemove())
           navigation.navigate(ROUTES.LOGIN) // Navigate to UserProfile with user data
           console.log('Logout pressed')
         }}
@@ -40,6 +42,7 @@ const CustomDrawerContent = props => {
 
 const DrawerNavigator = () => {
   const user = useSelector(state => state.user)
+  const schedule = useSelector(state => state.schedule)
 
   useEffect(() => {
     console.log('user in drawer ' + { ...user })
@@ -51,7 +54,7 @@ const DrawerNavigator = () => {
         headerTitle: ''
       }}
     >
-      {user.roomId !== null && user.shifts.length !== 0 ? (
+      {user.roomId !== null && schedule._id !== "" ? (
         <Drawer.Screen
           name={ROUTES.HOME_DRAWER}
           component={ButtomTabNavigator}

@@ -6,10 +6,12 @@ import {
 
 import userReducer from './reducers/userReducer'
 import roomReducer from './reducers/roomReducer'
+import scheduleReducer from './reducers/scheduleReducer'
 
 export default configureStore({
   reducer: {
     user: userReducer,
-    room: roomReducer
+    room: roomReducer,
+    schedule: scheduleReducer
   }
 })

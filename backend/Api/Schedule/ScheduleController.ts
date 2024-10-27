@@ -75,6 +75,10 @@ export async function createSchedule(ctx: any): Promise<any> {
 
     console.log("After generating schedule");
     if (fullSchedule.success) {
+      console.log(fullSchedule);
+      console.log(fullSchedule.data);
+      console.log("Schedule was created successfully!");
+
       ctx.body = JSON.stringify({
         success: true,
         msg: 'New schedule was created successfuly!',

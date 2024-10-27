@@ -10,7 +10,7 @@ const Tab = createBottomTabNavigator()
 const ButtomTabNavigator = () => {
   return (
     <Tab.Navigator
-    initialRouteName={ROUTES.GROUP_SHIFTS}
+    initialRouteName={ROUTES.USER_SHIFTS}
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: false,
@@ -31,8 +31,8 @@ const ButtomTabNavigator = () => {
       })}
     >
       <Tab.Screen name={ROUTES.CALENDAR_SHIFTS} component={CalendarShifts} />
-      <Tab.Screen name={ROUTES.GROUP_SHIFTS} component={GroupShifts} />
       <Tab.Screen name={ROUTES.USER_SHIFTS} component={UsersShifts} />
+      <Tab.Screen name={ROUTES.GROUP_SHIFTS} component={GroupShifts} />
     </Tab.Navigator>
   )
 }

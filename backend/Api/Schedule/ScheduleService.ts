@@ -20,11 +20,11 @@ export class ScheduleService {
   ) => {
     try {
       let currentDateEpoch = Math.floor(Date.now() / 1000)
-      let twoWeeksFromNowEpoch = Math.floor(
-        (Date.now() + 14 * 24 * 60 * 60 * 1000) / 1000
+      let weekFromNowEpoch = Math.floor(
+        (Date.now() + 3 * 24 * 60 * 60 * 1000) / 1000
       )
       const shifts: mongoose.Types.ObjectId[] = []
-      while (currentDateEpoch < twoWeeksFromNowEpoch) {
+      while (currentDateEpoch < weekFromNowEpoch) {
         const startDate = new Date(currentDateEpoch * 1000)
         const endDate = new Date((currentDateEpoch + shiftTime) * 1000)
 

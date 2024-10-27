@@ -52,15 +52,15 @@ export class ScheduleDal {
         .connect(process.env.DATABASE_URL as string)
         .then(async () => {
           try {
-            const updatedUser = await ScheduleModel.findByIdAndUpdate(
+            const updatedSchedule = await ScheduleModel.findByIdAndUpdate(
               id,
               updatedUserData,
               { new: true }
             )
-            if (!updatedUser) {
+            if (!updatedSchedule) {
               reject('User not found')
             }
-            resolve(updatedUser as ScheduleWithId)
+            resolve(updatedSchedule as ScheduleWithId)
           } catch (err) {
             reject(err)
           }

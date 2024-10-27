@@ -22,6 +22,28 @@ export class ShiftDal {
       throw error
     }
   }
+   getShiftsList = async (list: mongoose.Types.ObjectId[]) => {
+    try {
+      // Ensure Mongoose is connected
+      await mongoose.connect(process.env.DATABASE_URL as string);
+  
+      if (mongoose.connection.readyState !== 1) {
+        throw new Error('MongoDB is not connected');
+      }
+  
+      // Retrieve documents where _id matches any id in the provided list
+      const data = await ShiftModel.find({ _id: { $in: list } }).exec();
+  
+      if (data.length > 0) {
+        return { success: true, data, msg: 'Shifts retrieved by id list' };
+      } else {
+        throw 'No shifts found for provided IDs';
+      }
+    } catch (error) {
+      console.error('Error in getShiftsList:', error);
+      throw error; // Re-throw the error for handling in caller function
+    }
+  };
 
   getShiftById = async (id: mongoose.Types.ObjectId) => {
     try {

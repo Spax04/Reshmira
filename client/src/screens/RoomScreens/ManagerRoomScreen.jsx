@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  RefreshControl, ScrollView, TextInput, Platform, Modal, Button
+  RefreshControl, TextInput, Platform, Modal, ActivityIndicator
 } from "react-native";
 import axios from "axios";
 import { COLORS, ROUTES, VARS } from "../../constants";
@@ -15,6 +15,7 @@ import { useToast } from "react-native-toast-notifications";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import api from "../../utils/requstInterceptor";
+import { setSchedule, setShiftsList } from "../../store/reducers/scheduleReducer";
 
 const ManagerRoomScreen = ({ navigation }) => {
   const toast = useToast();
@@ -23,6 +24,7 @@ const ManagerRoomScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const room = useSelector((state) => state.room);
   const user = useSelector((state) => state.user);
+  const [loading, setLoading] = useState(false)
   const dispatch = useDispatch();
 
   const [scheduleName, setScheduleName] = useState("");
@@ -101,7 +103,6 @@ const ManagerRoomScreen = ({ navigation }) => {
   };
 
   const handleCreateSchedule = async () => {
-
     const totalGuardsPreShift = positionList.reduce((total, pos) => total + pos.guard_pre_position, 0);
 
     const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -149,6 +150,8 @@ const ManagerRoomScreen = ({ navigation }) => {
       return;
     }
 
+
+    setLoading(true)
     const newSchedule = {
       scheduleName: scheduleName,
       positions: positionList,
@@ -165,16 +168,39 @@ const ManagerRoomScreen = ({ navigation }) => {
 
     console.log({ ...newSchedule });
     try {
-      
-      const { success: createCheduleSeccess, data: createScheduleData, msg: createScheduleMsg } = await api.post(`${VARS.API_URL}/schedule/create/`, newSchedule)
-  
-      if (createCheduleSeccess) {
-  
-        console.log(createScheduleData);
+
+      const { data: scheduleResponse } = await api.post(`${VARS.API_URL}/schedule/create/`, newSchedule)
+
+      if (scheduleResponse.success) {
+        toast.show("Schedule was created successfully! Retreaing shifts...", {
+          type: "success",
+          placement: "bottom",
+          duration: 4000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+        console.log("seeting schedule to reduser");
+        dispatch(setSchedule(scheduleResponse.data))
+        console.log("starting retriving shifts");
+        const { data: shiftResponse } = await api.post(`${VARS.API_URL}/shift/get-list/`, { shiftsIds: scheduleResponse.data.shifts })
+
+        console.log(shiftResponse.data);
+        dispatch(setShiftsList(shiftResponse.data.data))
+
+
+        navigation.navigate(ROUTES.HOME_DRAWER)
       } else {
-        console.log(createScheduleMsg);
+        setLoading(false)
+        toast.show(scheduleResponse.msg, {
+          type: "danger",
+          placement: "bottom",
+          duration: 4000,
+          offset: 30,
+          animationType: "slide-in",
+        });
       }
     } catch (err) {
+      setLoading(false)
       console.log(err.message);
     }
   };
@@ -316,6 +342,7 @@ const ManagerRoomScreen = ({ navigation }) => {
         {roomCode ? (
           <Text style={styles.roomCode}>Room Code: {roomCode}</Text>
         ) : null}
+        <ActivityIndicator animating={loading} size="large" />
 
         <TouchableOpacity style={styles.button} onPress={handleCreateSchedule}>
           <Text style={styles.buttonText}>Create Schedule</Text>
