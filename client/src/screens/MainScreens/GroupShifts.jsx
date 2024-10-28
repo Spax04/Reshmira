@@ -1,50 +1,55 @@
-import { StyleSheet, View, ScrollView } from 'react-native';
-import React from 'react';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import DayComponent from '../../components/GroupShiftsSchedule/DayComponent';
-import moment from 'moment'; // Assuming you have moment.js to handle date formatting
-import { ROUTES } from '../../constants';
+import moment from 'moment';
 
 const GroupShifts = ({ navigation }) => {
-
-  // Retrieve shifts data from Redux store
   const schedule = useSelector((state) => state.schedule);
-  
-  useState(() => {
-    console.log("SCHEDULE ID" + schedule._id);
-    if (schedule._id == "")
-      navigation.navigate(ROUTES.HOME)
-  },[])
-  // Transform the shift data
-  // const shiftsByDay = schedule.shifts.reduce((acc, shift) => {
-  //   // Format start date to match your desired date structure (e.g., "Monday, January 1st")
-  //   const formattedDate = moment(shift.start_time).format('dddd, MMMM Do');
+  const [loading, setLoading] = useState(true);
 
-  //   // Structure the shift data to match previous structure
-  //   const formattedShift = {
-  //     startTime: moment(shift.start_time).format('HH:mm'),
-  //     endTime: moment(shift.end_time).format('HH:mm'),
-  //     positions: shift.guard_posts.map((post) => ({
-  //       name: post.position_name,
-  //     })),
-  //   };
+  useEffect(() => {
+    setLoading(false);
+    if (schedule.shifts && schedule.shifts.length > 0) {
+      console.log(schedule.shifts[0].guard_posts[0]);
+    }
+  }, [schedule.shifts]);
 
-  //   // Group shifts by formattedDate
-  //   if (!acc[formattedDate]) {
-  //     acc[formattedDate] = [];
-  //   }
-  //   acc[formattedDate].push(formattedShift);
+  // Group shifts by day
+  const shiftsByDay = schedule.shifts?.reduce((acc, shift) => {
+    const formattedDate = moment(shift.start_time).format('dddd, MMMM Do');
+    const startTime = moment(shift.start_time).format('HH:mm');
+    const endTime = moment(shift.end_time).format('HH:mm');
 
-  //   return acc;
-  // }, {});
+    const formattedShift = {
+      startTime,
+      endTime,
+      positions: shift.guard_posts?.map((post) => ({
+        position_name: post.position_name,
+        guards: post.guards,
+        guards_pre_position: post.guards.length,
+      })) || []
+    };
+
+    if (!acc[formattedDate]) {
+      acc[formattedDate] = [];
+    }
+    acc[formattedDate].push(formattedShift);
+
+    return acc;
+  }, {});
 
   return (
     <View style={styles.container}>
-      {/* <ScrollView>
-        {Object.entries(shiftsByDay).map(([date, shifts]) => (
-          <DayComponent key={date} date={date} shifts={shifts} navigation={navigation} />
-        ))}
-      </ScrollView> */}
+      {loading ? (
+        <ActivityIndicator animating={loading} size="large" />
+      ) : (
+        <ScrollView>
+          {Object.entries(shiftsByDay).map(([date, shifts]) => (
+            <DayComponent key={date} date={date} shifts={shifts} navigation={navigation} />
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };

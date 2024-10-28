@@ -14,6 +14,7 @@ import { COLORS, ROUTES, VARS } from "../../constants";
 import LogoImage from "../../../assets/images/logo.png";
 import axios from "axios";
 import { useToast } from "react-native-toast-notifications";
+import DeveloperSignature from "../../components/Utils/DeveloperSignature";
 
 const SignupScreen = ({ navigation }) => {
   const toast = useToast();
@@ -154,6 +155,7 @@ const SignupScreen = ({ navigation }) => {
           Do you already have an account? Login here.
         </Text>
       </TouchableOpacity>
+      <DeveloperSignature/>
     </View>
   );
 };

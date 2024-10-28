@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useToast } from "react-native-toast-notifications";
-
+import DeveloperSignature from "../../components/Utils/DeveloperSignature";
 import { COLORS, ROUTES, VARS } from "../../constants";
 import LogoImage from "../../../assets/images/logo.png";
 import axios from "axios";
@@ -200,6 +200,8 @@ const LoginScreen = ({ navigation }) => {
           Forgot password?
         </Text>
       </TouchableOpacity>
+      <DeveloperSignature/>
+
     </View>
   );
 };

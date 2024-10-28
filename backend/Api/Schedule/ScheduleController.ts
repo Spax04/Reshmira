@@ -7,6 +7,8 @@ import * as jwt from 'jsonwebtoken';
 import { Schedule } from '../../db/models/schedule';
 import mongoose from 'mongoose';
 import { ScheduleDal } from '../../dal/ScheduleDal';
+import { RoomDal } from '../../dal/RoomDal';
+import { RoomWithId } from '../../db/models/room';
 
 interface CreateScheduleRequestBody {
   scheduleName: string;
@@ -14,15 +16,53 @@ interface CreateScheduleRequestBody {
   positions: { position_name: string; guard_pre_position: number }[];
   shiftTime: number; // epoch format (seconds)
   guardsPreShift: number;
+  roomId: string
 }
 
 export const ScheduleController = (router: any) => {
   router.post('/schedule/create', bodyParser(), createSchedule);
+  router.get('/schedule/:id', bodyParser(), getScheduleById)
 };
+
+export async function getScheduleById(ctx: any): Promise<any> {
+
+  const { id } = ctx.request.params
+  console.log(id)
+  console.log("INSIDE")
+  try {
+    const { success: scheduleSuccess, data: scheduleData, msg: scheduleMsg } = await new ScheduleDal().getScheduleById(new mongoose.Types.ObjectId(id))
+    console.log("after getting schedule by id")
+
+    if (scheduleSuccess) {
+      console.log("success")
+
+      ctx.body = JSON.stringify({
+        success: true,
+        msg: 'Schedule retreived successfuly!',
+        data: scheduleData
+      });
+      ctx.status = 200;
+    } else {
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: scheduleMsg
+      });
+      ctx.status = 400;
+    }
+  } catch (err) {
+    console.error('Error in Sign In', err);
+    ctx.body = JSON.stringify({
+      success: false,
+      msg: 'Running into the problem while creating schedule. Try again.',
+    });
+    ctx.status = 404;
+  }
+}
+
 
 export async function createSchedule(ctx: any): Promise<any> {
   try {
-    const { scheduleName, guards, positions, shiftTime, guardsPreShift } = ctx
+    const { scheduleName, guards, positions, shiftTime, guardsPreShift, roomId } = ctx
       .request.body as CreateScheduleRequestBody;
 
     console.log("Schedule name: " + scheduleName);
@@ -72,6 +112,17 @@ export async function createSchedule(ctx: any): Promise<any> {
       positions,
       shiftTimeInSeconds
     );
+
+
+    const { data: roomResponse } = await new RoomDal().getRoomById(new mongoose.Types.ObjectId(roomId))
+
+    const updatedRoomData: Partial<RoomWithId> = {
+      ...roomResponse,
+      schedule_id: newScheduleResponse.data._id,
+      users: roomResponse.users.map(u => u._id)
+    };
+
+    await new RoomDal().updateRoom(new mongoose.Types.ObjectId(roomId), updatedRoomData)
 
     console.log("After generating schedule");
     if (fullSchedule.success) {

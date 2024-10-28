@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-import ShiftComponent from './ShiftComponent'; // Adjust the path as necessary
+import ShiftComponent from './ShiftComponent';
 
 const DayComponent = ({ date, shifts, navigation }) => {
   return (
@@ -11,7 +11,7 @@ const DayComponent = ({ date, shifts, navigation }) => {
           key={index}
           startTime={shift.startTime}
           endTime={shift.endTime}
-          positions={shift.positions}
+          positions={shift.positions} // Pass guard posts directly here
           date={date}
           navigation={navigation} 
         />

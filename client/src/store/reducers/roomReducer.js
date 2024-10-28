@@ -8,7 +8,7 @@ const initialState = {
   adminId: "",
   created_at: null,
   updated_at: null,
-  schedule_id: null,
+  scheduleId: null,
 };
 
 export const roomSlice = createSlice({
@@ -18,7 +18,7 @@ export const roomSlice = createSlice({
     setRoom: (state, action) => {
 
       console.log(action.payload);
-      
+
       state._id = action.payload._id;
       state.secret = action.payload.secret;
       state.users = action.payload.users;
@@ -42,6 +42,26 @@ export const roomSlice = createSlice({
         .then(() => console.log("Room data stored in AsyncStorage"))
         .catch((error) => console.error("Error storing room:", error));
     },
+    setScheduleId: (state, action) => {
+      // Update the state with the new scheduleId
+      state.scheduleId = action.payload;
+
+      // Create the room object to save in AsyncStorage, using the current state
+      const room = {
+        _id: state._id,
+        secret: state.secret,
+        users: state.users,
+        adminId: state.adminId,
+        scheduleId: state.scheduleId, // Updated scheduleId
+        createdAt: state.created_at, // Maintain existing properties
+        updatedAt: state.updated_at,
+      };
+
+      // Store the updated room object in AsyncStorage
+      AsyncStorage.setItem("room", JSON.stringify(room))
+        .then(() => console.log("Room data updated in AsyncStorage"))
+        .catch((error) => console.error("Error storing room:", error));
+    },
     removeRoom: (state, action) => {
       state._id = "";
       state.secret = "";
@@ -59,18 +79,23 @@ export const roomSlice = createSlice({
       state.users = action.payload;
     },
     initializeRoomState: (state, action) => {
+      console.log("INIT ROOM: ");
+
+      Object.entries(action.payload).forEach(([key, value]) => {
+        console.log(`${key}: ${value}`);
+      });
       state._id = action.payload._id || "";
       state.secret = action.payload.secret || "";
       state.users = action.payload.users || [];
       state.adminId = action.payload.adminId || "";
-      state.scheduleId = action.payload.schedule_id || null;
+      state.scheduleId = action.payload.scheduleId || null;
       state.createdAt = action.payload.created_at || null;
       state.updatedAt = action.payload.updated_at || null;
     },
   },
 });
 
-export const { setRoom, setRoomUsers, removeRoom, initializeRoomState } =
+export const { setRoom, setRoomUsers, removeRoom, initializeRoomState, setScheduleId } =
   roomSlice.actions;
 
 export default roomSlice.reducer;

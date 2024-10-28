@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    _id: "",
+    _id: null,
     name: "",
     users: [],
     shifts: [],
@@ -48,7 +48,7 @@ export const scheduleSlice = createSlice({
                 .catch((error) => console.error("Error storing schedule:", error));
         },
         scheduleRemove: (state) => {
-            state._id = ""
+            state._id = null
             state.name = ""
             state.users = []
             state.shifts = []
@@ -67,7 +67,7 @@ export const scheduleSlice = createSlice({
             state.shifts = action.payload;
         },
         initializeScheduleState: (state, action) => {
-            state._id = action.payload._id || ""
+            state._id = action.payload._id || null
             state.name = action.payload.name || ""
             state.users = action.payload.users || []
             state.shifts = action.payload.shifts || []

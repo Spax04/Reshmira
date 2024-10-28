@@ -9,6 +9,7 @@ import {
 import { Shift, GuardAssignment } from '../../db/models/shift'
 import { ScheduleDal } from '../../dal/ScheduleDal'
 import { ShiftDal } from '../../dal/ShiftDal'
+import { UserDal } from '../../dal/UserDal'
 
 export class ScheduleService {
   generateNewSchedule = async (
@@ -67,6 +68,8 @@ export class ScheduleService {
         shifts.push(savedShift.data._id)
         currentDateEpoch += shiftTime
       }
+
+      
 
       const currentScheduleResponse = await new ScheduleDal().getScheduleById(
         new mongoose.Types.ObjectId(scheduleId)

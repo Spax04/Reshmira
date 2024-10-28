@@ -16,6 +16,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import api from "../../utils/requstInterceptor";
 import { setSchedule, setShiftsList } from "../../store/reducers/scheduleReducer";
+import { setScheduleId } from "../../store/reducers/roomReducer";
 
 const ManagerRoomScreen = ({ navigation }) => {
   const toast = useToast();
@@ -157,7 +158,8 @@ const ManagerRoomScreen = ({ navigation }) => {
       positions: positionList,
       guards: users,
       shiftTime: formattedTime,
-      guardsPreShift: totalGuardsPreShift
+      guardsPreShift: totalGuardsPreShift,
+      roomId: room._id
     }
     console.log("Schedule name: " + scheduleName);
     console.log("positions: " + [...positionList]);
@@ -180,15 +182,19 @@ const ManagerRoomScreen = ({ navigation }) => {
           animationType: "slide-in",
         });
         console.log("seeting schedule to reduser");
-        dispatch(setSchedule(scheduleResponse.data))
         console.log("starting retriving shifts");
         const { data: shiftResponse } = await api.post(`${VARS.API_URL}/shift/get-list/`, { shiftsIds: scheduleResponse.data.shifts })
+        scheduleResponse.data.shifts = []
+        dispatch(setSchedule(scheduleResponse.data))
+        console.log("SCHEDULE ID:" + scheduleResponse.data._id);
+        dispatch(setScheduleId(scheduleResponse.data._id))
 
         console.log(shiftResponse.data);
-        dispatch(setShiftsList(shiftResponse.data.data))
+        dispatch(setShiftsList(shiftResponse.data))
 
-
-        navigation.navigate(ROUTES.HOME_DRAWER)
+        console.log("tryin navigate to home");
+        navigation.navigate(ROUTES.HOME);
+        setLoading(false)
       } else {
         setLoading(false)
         toast.show(scheduleResponse.msg, {

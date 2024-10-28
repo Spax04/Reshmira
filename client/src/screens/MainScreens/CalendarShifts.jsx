@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import React from 'react';
 import { Calendar } from 'react-native-calendars';
+import UnderConstruction from '../../components/Utils/UnderConstruction';
 
 const CalendarShifts = () => {
   const shiftsByDay = {
@@ -12,7 +13,7 @@ const CalendarShifts = () => {
 
   return (
     <View style={styles.container}>
-      <Calendar
+      {/* <Calendar
         // Initially visible month. Default = Date()
         current={'2024-07-01'}
         // Minimum date that can be selected, dates before minDate will be grayed out. Default = undefined
@@ -82,7 +83,8 @@ const CalendarShifts = () => {
           textMonthFontSize: 20,
           textDayHeaderFontSize: 14,
         }}
-      />
+      /> */}
+      <UnderConstruction />
     </View>
   );
 };

@@ -60,8 +60,8 @@ export const userSlice = createSlice({
       state._id = action.payload._id || "";
       state.fullName = action.payload.fullName || "";
       state.role = action.payload.role || "none";
-      state.roomId = action.payload.room_id || null;
       state.shifts = action.payload.shifts || [];
+      state.roomId = action.payload.roomId || null
     },
   },
 });
@@ -71,6 +71,7 @@ export const {
   removeUser,
   setUserToken,
   removeUsersRoomId,
+  setScheduleId,
   initializeUserState,
 } = userSlice.actions;
 

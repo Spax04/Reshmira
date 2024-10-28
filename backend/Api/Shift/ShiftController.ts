@@ -40,10 +40,11 @@ export async function getShiftsList(ctx: any): Promise<any> {
 
     const response = await new ShiftDal().getShiftsList(objectIds)
 
+    const updatedList = await new ShiftService().addGuardDataToShift(response.data)
     console.log(response);
     ctx.body = JSON.stringify({
       success: true,
-      data: response
+      data: updatedList
     })
     ctx.status = 200
   } catch (err) {

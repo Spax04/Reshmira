@@ -1,21 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import UserComponent from './UserComponent' // Adjust the path as necessary
-import { ROUTES } from '../../constants'
+import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import UserComponent from './UserComponent';
+import { ROUTES } from '../../constants';
 
-const ShiftComponent = ({
-  date,
-  startTime,
-  endTime,
-  positions,
-  navigation
-}) => {
+const ShiftComponent = ({ date, startTime, endTime, positions, navigation }) => {
   const handleUserPress = (user) => {
     navigation.navigate(ROUTES.USER_STACK, {
       screen: ROUTES.USER_PROFILE,
       params: { user }
-    }) // Navigate to UserProfile with user data
-  }
+    });
+  };
+
+  useEffect(()=>{console.log("POSITIONS"+{positions});},[])
 
   return (
     <View style={styles.container}>
@@ -23,25 +19,27 @@ const ShiftComponent = ({
       <Text style={styles.timeText}>
         {startTime} - {endTime}
       </Text>
-      {positions.map((position, index) => (
-        <View key={index}>
-          <Text style={styles.positionText}>{position.name}:</Text>
+      {positions?.map((post, index) => (
+        <View key={index} style={styles.positionContainer}>
+          <Text style={styles.positionText}>
+            {post.position_name} 
+          </Text>
           <View style={styles.userContainer}>
-            {position.assigned.map((user, userIndex) => (
+            {post.guards?.map((guard, userIndex) => (
               <UserComponent
                 key={userIndex}
-                user={user}
-                onPress={() => handleUserPress(user)} // Call the updated function
+                user={guard}
+                onPress={() => handleUserPress(guard._id)}
               />
             ))}
           </View>
         </View>
       ))}
     </View>
-  )
-}
+  );
+};
 
-export default ShiftComponent
+export default ShiftComponent;
 
 const styles = StyleSheet.create({
   container: {
@@ -50,10 +48,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#f8f8f8',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
     elevation: 2
@@ -70,10 +65,16 @@ const styles = StyleSheet.create({
   },
   positionText: {
     fontSize: 14,
-    marginTop: 4
+    marginTop: 4,
+    fontWeight: 'bold',
+    color: '#333'
+  },
+  positionContainer: {
+    marginVertical: 5,
   },
   userContainer: {
     flexDirection: 'row',
-    marginTop: 4
+    marginTop: 4,
+    flexWrap: 'wrap'
   }
-})
+});
