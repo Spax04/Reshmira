@@ -14,7 +14,9 @@ export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUser: (state, action) => {
+    setUser:  (state, action) => {
+      console.log("IN SET USER REDUCE!!!");
+      console.log(action.payload);
       state._id = action.payload._id;
       state.fullName = action.payload.full_name;
       state.role = action.payload.role;
@@ -26,21 +28,27 @@ export const userSlice = createSlice({
         fullName: action.payload.full_name,
         role: action.payload.role,
         roomId: action.payload.room_id,
-        shifts: [...action.payload.shifts],
+        shifts: action.payload.shifts,
       };
 
+      console.log("Async storage saves user");
+      console.log(user);
       // Store user data in AsyncStorage
-      AsyncStorage.setItem("user", JSON.stringify(user))
-        .then(() => console.log("User stored in AsyncStorage"))
-        .catch((error) => console.error("Error storing user:", error));
+      const saveData = async ()=>{
+
+        await AsyncStorage.setItem("user", JSON.stringify(user))
+          .then(() => console.log("User stored in AsyncStorage"))
+          .catch((error) => console.error("Error storing user:", error));
+      }
+      saveData()
     },
-    setUserToken: (state, action) => {
+    setUserToken:  (state, action) => {
       state.token = action.payload;
-      AsyncStorage.setItem("token", JSON.stringify(action.payload))
+       AsyncStorage.setItem("token", JSON.stringify(action.payload))
         .then(() => console.log("Token stored in AsyncStorage"))
         .catch((error) => console.error("Error storing token:", error));
     },
-    removeUser: (state) => {
+    removeUser:  (state) => {
       state.token = "";
       state._id = "";
       state.fullName = "";
@@ -48,14 +56,16 @@ export const userSlice = createSlice({
       state.roomId = null;
       state.shifts = [];
       // Remove user data from AsyncStorage
-      AsyncStorage.removeItem("user")
+       AsyncStorage.removeItem("user")
         .then(() => console.log("User removed from AsyncStorage"))
         .catch((error) => console.error("Error removing user:", error));
+       AsyncStorage.clear()
     },
     removeUsersRoomId: (state) => {
       state.roomId = null;
     },
-    initializeUserState: (state, action) => {
+    initializeUserState:  (state, action) => {
+      console.log(action.payload);
       console.log(action.payload.fullName);
       state.token = action.payload.token || "";
       state._id = action.payload._id || "";
@@ -63,6 +73,7 @@ export const userSlice = createSlice({
       state.role = action.payload.role || "none";
       state.shifts = action.payload.shifts || [];
       state.roomId = action.payload.roomId || null
+      
     },
   },
 });

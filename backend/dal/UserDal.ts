@@ -25,6 +25,28 @@ export class UserDal {
       await mongoose.disconnect()
     }
   }
+  getUsersList = async (list: mongoose.Types.ObjectId[]) => {
+    try {
+      // Ensure Mongoose is connected
+      await mongoose.connect(process.env.DATABASE_URL as string);
+  
+      if (mongoose.connection.readyState !== 1) {
+        throw new Error('MongoDB is not connected');
+      }
+  
+      // Retrieve documents where _id matches any id in the provided list
+      const data : UserWithId[] = await UserModel.find({ _id: { $in: list } }).exec();
+  
+      if (data.length > 0) {
+        return { success: true, data, msg: 'Users retrieved by id list' };
+      } else {
+        throw 'No users found for provided IDs';
+      }
+    } catch (error) {
+      console.error('Error in getUsersList:', error);
+      throw error; // Re-throw the error for handling in caller function
+    }
+  }
 
   getUserById = async (id: mongoose.Types.ObjectId) => {
     try {

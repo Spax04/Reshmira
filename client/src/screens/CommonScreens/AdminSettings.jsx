@@ -1,5 +1,5 @@
-import { Button, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import React from 'react'
+import { Button, StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native'
+import React, { useState} from 'react'
 import { COLORS } from '../../constants'
 import AccordionItem from '../../components/Utils/AccordionItem'
 import Animated, {
@@ -7,11 +7,20 @@ import Animated, {
     useDerivedValue,
     useSharedValue,
     withTiming,
-  } from 'react-native-reanimated';
+} from 'react-native-reanimated';
+import { useSelector } from 'react-redux';
 const AdminSettings = () => {
-    const open = useSharedValue(false);
-    const onPress = () => {
-      open.value = !open.value;
+    const guardsOpen = useSharedValue(false);
+    const extendOpen = useSharedValue(false);
+
+    const [extendScheduleDays, setExtendScheduleDays] = useState(0)
+
+    const schedule = useSelector(state => state.schedule)
+    const guardsOnPress = () => {
+        guardsOpen.value = !guardsOpen.value;
+    };
+    const extendOnPress = () => {
+        extendOpen.value = !extendOpen.value;
     };
     const handleDeleteSchedule = async () => {
 
@@ -22,17 +31,45 @@ const AdminSettings = () => {
     return (
         <View style={styles.container}>
             <View style={styles.content}>
-                <Text>AdminSettings</Text>
                 <TouchableOpacity
                     style={styles.extendButton}
-                    onPress={onPress}
+                    onPress={guardsOnPress}
+                >
+                    <Text style={styles.buttonText}>Guards</Text>
+                </TouchableOpacity>
+                <View style={styles.parent}>
+                    <AccordionItem isExpanded={guardsOpen} viewKey="Accordion">
+                        <View>
+                            {schedule.users.map(u =>
+                                <View>
+                                    <Text>{u.fullName}</Text>
+                                </View>
+                            )}
+                        </View>
+                    </AccordionItem>
+                </View>
+                <TouchableOpacity
+                    style={styles.extendButton}
+                    onPress={extendOnPress}
                 >
                     <Text style={styles.buttonText}>Extend Schedule</Text>
                 </TouchableOpacity>
                 <View style={styles.parent}>
-                    <AccordionItem isExpanded={open} viewKey="Accordion">
+                    <AccordionItem isExpanded={extendOpen} viewKey="Accordion">
                         <View>
-                            <Text>Data</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter number of guards"
+                                keyboardType="numeric"
+                                value={extendScheduleDays}
+                                onChangeText={setExtendScheduleDays}
+                            />
+                            <TouchableOpacity
+                                style={styles.handleButton}
+                                onPress={handleExtendSchedule}
+                            >
+                                <Text style={styles.buttonText}>Accept</Text>
+                            </TouchableOpacity>
                         </View>
                     </AccordionItem>
                 </View>
@@ -67,7 +104,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         backgroundColor: '#f8f8f8',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height:0 },
+        shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.2,
         shadowRadius: 1.41,
         elevation: 2
@@ -96,5 +133,8 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         marginBottom: 20,
         marginTop: 20
+    },
+    handleButton: {
+        backgroundColor: "#f39c12",
     }
 })

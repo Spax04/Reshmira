@@ -2,13 +2,14 @@ import * as bodyParser from 'koa-bodyparser';
 import { ScheduleService } from './ScheduleService';
 
 import * as bcrypt from 'bcryptjs';
-import { User } from '../../db/models/user';
+import { User, UserWithId } from '../../db/models/user';
 import * as jwt from 'jsonwebtoken';
 import { Schedule } from '../../db/models/schedule';
 import mongoose from 'mongoose';
 import { ScheduleDal } from '../../dal/ScheduleDal';
 import { RoomDal } from '../../dal/RoomDal';
 import { RoomWithId } from '../../db/models/room';
+import { UserDal } from '../../dal/UserDal';
 
 interface CreateScheduleRequestBody {
   scheduleName: string;
@@ -22,6 +23,7 @@ interface CreateScheduleRequestBody {
 export const ScheduleController = (router: any) => {
   router.post('/schedule/create', bodyParser(), createSchedule);
   router.get('/schedule/:id', bodyParser(), getScheduleById)
+  router.post("/schedule/guards-by-id-list",bodyParser(), )
 };
 
 export async function getScheduleById(ctx: any): Promise<any> {
@@ -34,12 +36,24 @@ export async function getScheduleById(ctx: any): Promise<any> {
     console.log("after getting schedule by id")
 
     if (scheduleSuccess) {
-      console.log("success")
 
+      const objectIds = scheduleData.guards.map(id => new mongoose.Types.ObjectId(id));
+
+      const response = await new UserDal().getUsersList(objectIds)
+
+      let updatedGuards : any = []
+      response.data.forEach(guard => updatedGuards.push({ _id: guard._id, fullName: guard.full_name}))
+
+      console.log("UPDATED GUARDS");
+      console.log(updatedGuards);
+      let updatedSchedule: any = JSON.parse(JSON.stringify(scheduleData)); // Deep copy
+      updatedSchedule.guards = updatedGuards
+      console.log("UPDATED SCHEDULE");
+      console.log(updatedSchedule);
       ctx.body = JSON.stringify({
         success: true,
         msg: 'Schedule retreived successfuly!',
-        data: scheduleData
+        data: updatedSchedule
       });
       ctx.status = 200;
     } else {

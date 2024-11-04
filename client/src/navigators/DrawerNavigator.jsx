@@ -55,7 +55,7 @@ const DrawerNavigator = () => {
     console.log("room id in user: " + user.roomId)
 
     getSchedule = async () => {
-      
+
       if (room.scheduleId !== null && schedule._id === null) {
         console.log("inside!")
         try {
@@ -63,7 +63,8 @@ const DrawerNavigator = () => {
           const { data: scheduleResponse } = await api.get(`${VARS.API_URL}/schedule/${room.scheduleId}`)
           console.log(scheduleResponse)
           if (scheduleResponse.success) {
-            console.log("SHEDULE RESPONSE:" + scheduleResponse.data)
+            console.log("SHEDULE RESPONSE:")
+            console.log(scheduleResponse.data);
 
             const { data: shiftResponse } = await api.post(`${VARS.API_URL}/shift/get-list/`, { shiftsIds: scheduleResponse.data.shifts })
             scheduleResponse.data.shifts = []
@@ -87,7 +88,7 @@ const DrawerNavigator = () => {
       screenOptions={{
         headerTitle: `Welcome, ${user.fullName}`
       }}
-      >
+    >
       {room.scheduleId !== null ? (
         <Drawer.Screen
           name={ROUTES.HOME_DRAWER}
@@ -103,7 +104,7 @@ const DrawerNavigator = () => {
           options={{
             title: 'Room menu'
           }}
-          />
+        />
       )}
       <Drawer.Screen
         name={ROUTES.SETTINGS}
@@ -113,13 +114,13 @@ const DrawerNavigator = () => {
         }}
       />
       {(room.scheduleId !== null && user._id === room.adminId) ?
-      <Drawer.Screen
-      name={ROUTES.ADMIN_SETTINGS}
-      component={AdminSettings}
-      options={{
-        title: 'Admin Settings'
-      }}
-    />:<></>}
+        <Drawer.Screen
+          name={ROUTES.ADMIN_SETTINGS}
+          component={AdminSettings}
+          options={{
+            title: 'Admin Settings'
+          }}
+        /> : <></>}
     </Drawer.Navigator>
   )
 }

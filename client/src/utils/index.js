@@ -10,6 +10,8 @@ export const initializeAppState = () => async (dispatch) => {
     const roomJson = await AsyncStorage.getItem("room");
 
     const user = userJson ? JSON.parse(userJson) : {};
+    console.log("USER INIT");
+    console.log(user);
     const token = tokenJson ? JSON.parse(tokenJson) : "";
     const room = roomJson ? JSON.parse(roomJson) : {};
 
