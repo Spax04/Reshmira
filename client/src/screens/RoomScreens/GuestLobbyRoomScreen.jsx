@@ -12,7 +12,7 @@ import { COLORS, ROUTES, VARS } from "../../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { removeRoom, setRoomUsers } from "../../store/reducers/roomReducer";
 import { useToast } from "react-native-toast-notifications";
-import { removeUsersRoomId } from "../../store/reducers/userReducer";
+import { removeUsersRoomId, setScheduleId } from "../../store/reducers/userReducer";
 import api from "../../utils/requstInterceptor";
 
 const GuestLobbyRoomScreen = ({ navigation }) => {
@@ -79,6 +79,14 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
         `${VARS.API_URL}/room/${room._id}/users`,
       );
       if (usersByRoomIdResponse.success) {
+        const { data: roomResponse } = await api.get(`${VARS.API_URL}/room/${room._id}`)
+        if (roomResponse.success) {
+          if (roomResponse.data.schedule_id) {
+            console.log("Schedule id: " + roomResponse.data.schedule_id);
+            dispatch(setScheduleId(roomResponse.data.schedule_id))
+            navigation.navigate(ROUTES.HOME);
+          }
+        }
         setUsers(usersByRoomIdResponse.data);
         dispatch(setRoomUsers(usersByRoomIdResponse.data));
       } else {

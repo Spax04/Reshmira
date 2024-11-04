@@ -56,12 +56,11 @@ const ManagerRoomScreen = ({ navigation }) => {
     if (newPositionName && newGuardPrePosition) {
       const newPosition = {
         position_name: newPositionName,
-        guard_pre_position: parseInt(newGuardPrePosition), // Convert to number
+        guard_pre_position: parseInt(newGuardPrePosition), 
       };
 
       setPositionList((prevPositions) => [...prevPositions, newPosition]);
 
-      // Clear input fields after adding
       setNewPositionName("");
       setNewGuardPrePosition("");
     } else {
@@ -223,6 +222,14 @@ const ManagerRoomScreen = ({ navigation }) => {
         }
       );
       if (usersByRoomIdResponse.success) {
+        const { data: roomResponse } = await api.get(`${VARS.API_URL}/room/${room._id}`)
+        if (roomResponse.success) {
+          if (roomResponse.data.schedule_id) {
+            console.log("Schedule id: " + roomResponse.data.schedule_id);
+            dispatch(setScheduleId(roomResponse.data.schedule_id))
+            navigation.navigate(ROUTES.HOME);
+          }
+        }
         setUsers(usersByRoomIdResponse.data);
         dispatch(setRoomUsers(usersByRoomIdResponse.data));
       } else {
@@ -710,7 +717,7 @@ const styles = StyleSheet.create({
     color: "#333", // Consistent title color
   },
   submitButton: {
-    backgroundColor: "#27ae60", // Green button for submission
+    backgroundColor: COLORS.greenSubmit, // Green button for submission
     padding: 15,
     borderRadius: 10,
     alignItems: "center",

@@ -56,6 +56,7 @@ export const userSlice = createSlice({
       state.roomId = null;
     },
     initializeUserState: (state, action) => {
+      console.log(action.payload.fullName);
       state.token = action.payload.token || "";
       state._id = action.payload._id || "";
       state.fullName = action.payload.fullName || "";

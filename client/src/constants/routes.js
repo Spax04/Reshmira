@@ -16,6 +16,7 @@ export default {
   USER_PROFILE: 'user profile',
 
   SETTINGS: 'settings',
+  ADMIN_SETTINGS: 'admin settings',
 
   LOBBY_ROOM: 'lobby room',
   MANAGE_ROOM: 'manage room',

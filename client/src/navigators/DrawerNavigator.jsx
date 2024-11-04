@@ -18,6 +18,7 @@ import { removeRoom } from '../store/reducers/roomReducer'
 import { scheduleRemove, setSchedule, setShiftsList } from '../store/reducers/scheduleReducer'
 import api from "../utils/requstInterceptor";
 import DeveloperSignature from '../components/Utils/DeveloperSignature'
+import AdminSettings from '../screens/CommonScreens/AdminSettings'
 
 const Drawer = createDrawerNavigator()
 
@@ -42,18 +43,6 @@ const CustomDrawerContent = props => {
     </DrawerContentScrollView>
   )
 }
-const styles = {
-  versionContainer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    alignItems: 'center',
-  },
-  versionText: {
-    fontSize: 14,
-    color: '#777', // Light gray for subtle display
-  },
-};
 
 const DrawerNavigator = () => {
   const user = useSelector(state => state.user)
@@ -66,7 +55,7 @@ const DrawerNavigator = () => {
     console.log("room id in user: " + user.roomId)
 
     getSchedule = async () => {
-
+      
       if (room.scheduleId !== null && schedule._id === null) {
         console.log("inside!")
         try {
@@ -75,8 +64,6 @@ const DrawerNavigator = () => {
           console.log(scheduleResponse)
           if (scheduleResponse.success) {
             console.log("SHEDULE RESPONSE:" + scheduleResponse.data)
-
-
 
             const { data: shiftResponse } = await api.post(`${VARS.API_URL}/shift/get-list/`, { shiftsIds: scheduleResponse.data.shifts })
             scheduleResponse.data.shifts = []
@@ -98,9 +85,9 @@ const DrawerNavigator = () => {
     <Drawer.Navigator
       drawerContent={props => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerTitle: ''
+        headerTitle: `Welcome, ${user.fullName}`
       }}
-    >
+      >
       {room.scheduleId !== null ? (
         <Drawer.Screen
           name={ROUTES.HOME_DRAWER}
@@ -116,7 +103,7 @@ const DrawerNavigator = () => {
           options={{
             title: 'Room menu'
           }}
-        />
+          />
       )}
       <Drawer.Screen
         name={ROUTES.SETTINGS}
@@ -125,8 +112,29 @@ const DrawerNavigator = () => {
           title: 'Settings'
         }}
       />
+      {(room.scheduleId !== null && user._id === room.adminId) ?
+      <Drawer.Screen
+      name={ROUTES.ADMIN_SETTINGS}
+      component={AdminSettings}
+      options={{
+        title: 'Admin Settings'
+      }}
+    />:<></>}
     </Drawer.Navigator>
   )
 }
 
 export default DrawerNavigator
+
+const styles = {
+  versionContainer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    alignItems: 'center',
+  },
+  versionText: {
+    fontSize: 14,
+    color: '#777', // Light gray for subtle display
+  },
+};
