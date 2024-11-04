@@ -69,7 +69,7 @@ const UserProfile = ({ route }) => {
         <Text style={styles.backBtnText}>Back</Text>
       </TouchableOpacity>
       <View style={styles.content}>
-        <Text style={styles.nameText}>{user.fullName}</Text>
+        <Text style={styles.nameText}>{user.full_name}</Text>
         <Text style={styles.shiftsHeader}>Shifts:</Text>
         <FlatList
           data={user.shifts} // Use the user's shifts data

@@ -33,6 +33,8 @@ const LoginScreen = ({ navigation }) => {
         const storedUser = await AsyncStorage.getItem("user");
         const storedToken = await AsyncStorage.getItem("token");
 
+        console.log("USER ON LOGIN CHECK");
+        console.log(storedUser);
         if (storedUser && storedToken) {
           const parsedUser = JSON.parse(storedUser);
           const parsedToken = JSON.parse(storedToken);

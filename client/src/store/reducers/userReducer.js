@@ -4,9 +4,9 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   token: "",
   _id: "",
-  fullName: "",
+  full_name: "",
   role: "none",
-  roomId: null,
+  room_id: null,
   shifts: [],
 };
 
@@ -18,16 +18,16 @@ export const userSlice = createSlice({
       console.log("IN SET USER REDUCE!!!");
       console.log(action.payload);
       state._id = action.payload._id;
-      state.fullName = action.payload.full_name;
+      state.full_name = action.payload.full_name;
       state.role = action.payload.role;
-      state.roomId = action.payload.room_id;
+      state.room_id = action.payload.room_id;
       state.shifts = [...action.payload.shifts];
 
       const user = {
         _id: action.payload._id,
-        fullName: action.payload.full_name,
+        full_name: action.payload.full_name,
         role: action.payload.role,
-        roomId: action.payload.room_id,
+        room_id: action.payload.room_id,
         shifts: action.payload.shifts,
       };
 
@@ -51,9 +51,9 @@ export const userSlice = createSlice({
     removeUser:  (state) => {
       state.token = "";
       state._id = "";
-      state.fullName = "";
+      state.full_name = "";
       state.role = "none";
-      state.roomId = null;
+      state.room_id = null;
       state.shifts = [];
       // Remove user data from AsyncStorage
        AsyncStorage.removeItem("user")
@@ -62,17 +62,17 @@ export const userSlice = createSlice({
        AsyncStorage.clear()
     },
     removeUsersRoomId: (state) => {
-      state.roomId = null;
+      state.room_id = null;
     },
     initializeUserState:  (state, action) => {
       console.log(action.payload);
-      console.log(action.payload.fullName);
+      console.log(action.payload.full_name);
       state.token = action.payload.token || "";
       state._id = action.payload._id || "";
-      state.fullName = action.payload.fullName || "";
+      state.full_name = action.payload.fullName || "";
       state.role = action.payload.role || "none";
       state.shifts = action.payload.shifts || [];
-      state.roomId = action.payload.roomId || null
+      state.room_id = action.payload.roomId || null
       
     },
   },

@@ -52,7 +52,7 @@ const DrawerNavigator = () => {
   useEffect(() => {
     console.log("shedule id in room: " + room.scheduleId);
     console.log("shedule id: " + schedule._id);
-    console.log("room id in user: " + user.roomId)
+    console.log("room id in user: " + user.room_id)
 
     getSchedule = async () => {
 
@@ -81,12 +81,12 @@ const DrawerNavigator = () => {
   }, [room.scheduleId])
   useEffect(() => {
     console.log('user in drawer ' + { ...user })
-  }, [user.roomId])
+  }, [user.room_id])
   return (
     <Drawer.Navigator
       drawerContent={props => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerTitle: `Welcome, ${user.fullName}`
+        headerTitle: `Welcome, ${user.full_name}`
       }}
     >
       {room.scheduleId !== null ? (

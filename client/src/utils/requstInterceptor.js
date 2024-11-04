@@ -62,7 +62,7 @@ api.interceptors.response.use(
       await AsyncStorage.removeItem("token"); // Remove token from storage
       await AsyncStorage.removeItem("user"); // Remove token from storage
       await AsyncStorage.removeItem("room"); // Remove token from storage
-
+      await AsyncStorage.clear()
       store.dispatch(removeUser()); // Dispatch Redux action to clear auth state
       store.dispatch(removeRoom());
 
