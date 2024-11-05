@@ -44,7 +44,7 @@ const CustomDrawerContent = props => {
   )
 }
 
-const DrawerNavigator = () => {
+const DrawerNavigator = ({ navigation }) => {
   const user = useSelector(state => state.user)
   const schedule = useSelector(state => state.schedule)
   const room = useSelector(state => state.room)
