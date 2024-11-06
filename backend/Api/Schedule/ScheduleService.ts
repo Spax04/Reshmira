@@ -17,10 +17,11 @@ export class ScheduleService {
     guardsPreShift: number,
     guards: mongoose.Types.ObjectId[],
     positions: { position_name: string; guard_pre_position: number }[],
-    shiftTime: number // epoch format (seconds)
+    shiftTime: number,// epoch format (seconds)
+    scheduleStartDate: number
   ) => {
     try {
-      let currentDateEpoch = Math.floor(Date.now() / 1000)
+      let currentDateEpoch = Math.floor(scheduleStartDate)
       let weekFromNowEpoch = Math.floor(
         (Date.now() + 3 * 24 * 60 * 60 * 1000) / 1000
       )

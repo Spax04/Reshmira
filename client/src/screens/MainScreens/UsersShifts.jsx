@@ -55,7 +55,7 @@ const UsersShifts = ({ navigation }) => {
         <ActivityIndicator animating={loading} size="large" />
       ) : (
         <ScrollView>
-          <Text style={styles.headerText}>User's Shifts</Text>
+          <Text style={styles.headerText}>Your Shifts</Text>
           {Object.keys(userShiftsByDay).length === 0 ? (
             <Text style={styles.noShiftsText}>No shifts available for this user.</Text>
           ) : (

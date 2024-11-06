@@ -31,9 +31,15 @@ const ManagerRoomScreen = ({ navigation }) => {
   const [scheduleName, setScheduleName] = useState("");
 
   const [positionList, setPositionList] = useState([]);
-  const [time, setTime] = useState(new Date(new Date().setHours(0, 0, 0, 0))); const [showTimePicker, setShowTimePicker] = useState(false);
+  const [shiftTime, setShiftTime] = useState(new Date(new Date().setHours(0, 0, 0, 0)));
 
-  const [showModal, setShowModal] = useState(false); // Controls the modal visibility
+  const [scheduleDate, setScheduleDate] = useState(Date.now());
+  const [scheduleTimeStart, setScheduleTimeStart] = useState(new Date(new Date().setHours(0, 0, 0, 0))) // Only for android
+
+  const [showShiftTimeModal, setShowShiftTimeModal] = useState(false);
+  const [showScheduleStartDateModal, setShowScheduleStartDateModal] = useState(false)
+  const [showScheduleStartTimeModal, setShowScheduleStartTimeModal] = useState(false) // Only for android
+
 
   // States for new position input
   const [newPositionName, setNewPositionName] = useState("");
@@ -56,7 +62,7 @@ const ManagerRoomScreen = ({ navigation }) => {
     if (newPositionName && newGuardPrePosition) {
       const newPosition = {
         position_name: newPositionName,
-        guard_pre_position: parseInt(newGuardPrePosition), 
+        guard_pre_position: parseInt(newGuardPrePosition),
       };
 
       setPositionList((prevPositions) => [...prevPositions, newPosition]);
@@ -105,7 +111,8 @@ const ManagerRoomScreen = ({ navigation }) => {
   const handleCreateSchedule = async () => {
     const totalGuardsPreShift = positionList.reduce((total, pos) => total + pos.guard_pre_position, 0);
 
-    const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const formattedShiftTime = shiftTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const formatedScheduleDate = scheduleDate.getTime() / 1000
 
     if (scheduleName === '') {
       toast.show("Set schedule name!", {
@@ -129,7 +136,7 @@ const ManagerRoomScreen = ({ navigation }) => {
       return;
     }
 
-    if (time.getHours() === 0 && time.getMinutes() === 0) {
+    if (shiftTime.getHours() === 0 && shiftTime.getMinutes() === 0) {
       toast.show("Shift time not set", {
         type: "warning",
         placement: "bottom",
@@ -156,16 +163,17 @@ const ManagerRoomScreen = ({ navigation }) => {
       scheduleName: scheduleName,
       positions: positionList,
       guards: users,
-      shiftTime: formattedTime,
+      shiftTime: formattedShiftTime,
       guardsPreShift: totalGuardsPreShift,
-      roomId: room._id
+      roomId: room._id,
+      scheduleStartDate: formatedScheduleDate
     }
     console.log("Schedule name: " + scheduleName);
     console.log("positions: " + [...positionList]);
     console.log("Guards: " + [...users]);
-    console.log("Shift time: " + formattedTime);
+    console.log("Shift time: " + formattedShiftTime);
     console.log("Guards pre shift: " + totalGuardsPreShift);
-
+    console.log("Schedule date: " + formatedScheduleDate);
 
     console.log({ ...newSchedule });
     try {
@@ -321,20 +329,52 @@ const ManagerRoomScreen = ({ navigation }) => {
 
 
   // Handler for time picker
-  const onTimeChange = (event, selectedTime) => {
+  const onShiftTimeChange = (event, selectedTime) => {
     console.log("SELECTED TIME: " + selectedTime);
-    setTime(selectedTime);
+    setShiftTime(selectedTime);
     if (Platform.OS === 'android') {
-      setShowModal(false); // Close modal when time is picked on Android
+      setShowShiftTimeModal(false); // Close modal when time is picked on Android
+    }
+  };
+
+  const onScheduleDateChange = (event, date) => {
+    console.log("SELECTED Schedule StartDate: " + date);
+    console.log(date.getTime() / 1000);
+    
+    setScheduleDate(date);
+    if (Platform.OS === 'android') {
+      setShowScheduleStartDateModal(false); // Close modal when date is picked on Android
+    }
+  };
+
+  const onScheduleStartTimeChange = (event, selectedTime) => {
+    console.log("SELECTED TIME: " + selectedTime);
+    setScheduleTimeStart(selectedTime);
+    if (Platform.OS === 'android') {
+      setShowScheduleStartTimeModal(false); // Close modal when time is picked on Android
     }
   };
 
   // Close the modal manually for iOS after time is picked
-  const closeModal = () => {
-    setShowModal(false);
+  const closeShiftTimeModal = () => {
+    setShowShiftTimeModal(false);
+  };
+
+  const closeScheduleDateModal = () => {
+    setShowScheduleStartDateModal(false);
   };
   const formatTime = (time) => {
     return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formateDate = (time) => {
+    const date = new Date(time);
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
   const deletePosition = (index) => {
     setPositionList((prevPositions) => {
@@ -380,44 +420,44 @@ const ManagerRoomScreen = ({ navigation }) => {
                 <Text style={styles.label}>Select Shift Time:</Text>
                 <TouchableOpacity
                   style={styles.selectInput}
-                  onPress={() => setShowModal(true)}
+                  onPress={() => setShowShiftTimeModal(true)}
                 >
-                  <Text style={styles.selectText}>{formatTime(time)}</Text>
+                  <Text style={styles.selectText}>{formatTime(shiftTime)}</Text>
                 </TouchableOpacity>
 
                 <Modal
                   transparent={true}
                   animationType="slide"
-                  visible={showModal}
-                  onRequestClose={() => setShowModal(false)}
+                  visible={showShiftTimeModal}
+                  onRequestClose={() => setShowShiftTimeModal(false)}
                 >
                   <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                       {Platform.OS === 'ios' && (
                         <View style={styles.pickerContainer}>
                           <DateTimePicker
-                            value={time}
+                            value={shiftTime}
                             mode="time"
                             is24Hour={true}
                             display="spinner"
-                            onChange={onTimeChange}
+                            onChange={onShiftTimeChange}
                             minuteInterval={15}
                           />
                         </View>
                       )}
-                      {Platform.OS === 'android' && showTimePicker && (
+                      {Platform.OS === 'android' && (
                         <DateTimePicker
-                          value={time}
+                          value={shiftTime}
                           mode="time"
                           is24Hour={true}
                           display="spinner"
-                          onChange={onTimeChange}
+                          onChange={onShiftTimeChange}
                         />
                       )}
                       {Platform.OS === 'ios' && (
                         <TouchableOpacity
                           style={styles.modalButton}
-                          onPress={closeModal}
+                          onPress={closeShiftTimeModal}
                         >
                           <Text style={styles.modalButtonText}>Done</Text>
                         </TouchableOpacity>
@@ -425,6 +465,90 @@ const ManagerRoomScreen = ({ navigation }) => {
                     </View>
                   </View>
                 </Modal>
+
+                <Text style={styles.label}>Select Schedule start date:</Text>
+                <TouchableOpacity
+                  style={styles.selectInput}
+                  onPress={() => setShowScheduleStartDateModal(true)}
+                >
+                  <Text style={styles.selectText}>{formateDate(scheduleDate)}</Text>
+                </TouchableOpacity>
+
+                <Modal
+                  transparent={true}
+                  animationType="slide"
+                  visible={showScheduleStartDateModal}
+                  onRequestClose={() => setShowScheduleStartDateModal(false)}
+                >
+                  <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                      {Platform.OS === 'ios' && (
+                        <View style={styles.pickerContainer}>
+                          <DateTimePicker
+                            value={ new Date(scheduleDate)}
+                            mode="datetime"
+                            is24Hour={true}
+                            display="spinner"
+                            onChange={onScheduleDateChange}
+                            minuteInterval={15}
+                          />
+                        </View>
+                      )}
+                      {Platform.OS === 'android' && (
+
+                        <DateTimePicker
+                          value={scheduleDate}
+                          mode="date"
+                          is24Hour={true}
+                          display="spinner"
+                          onChange={onScheduleDateChange}
+                        />
+                      )}
+                      {Platform.OS === 'ios' && (
+                        <TouchableOpacity
+                          style={styles.modalButton}
+                          onPress={closeScheduleDateModal}
+                        >
+                          <Text style={styles.modalButtonText}>Done</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                </Modal>
+
+                {Platform.OS === 'android' ?
+                  <View>
+                    <Text style={styles.label}>Select Schedule start time:</Text>
+                    <TouchableOpacity
+                      style={styles.selectInput}
+                      onPress={() => setShowScheduleStartTimeModal(true)}
+                    >
+                      <Text style={styles.selectText}>{formatTime(scheduleTimeStart)}</Text>
+                    </TouchableOpacity>
+
+                    <Modal
+                      transparent={true}
+                      animationType="slide"
+                      visible={showScheduleStartTimeModal}
+                      onRequestClose={() => setShowScheduleStartTimeModal(false)}
+                    >
+                      <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+
+                          {Platform.OS === 'android' && (
+
+                            <DateTimePicker
+                              value={scheduleDate}
+                              mode="time"
+                              is24Hour={true}
+                              display="spinner"
+                              onChange={onScheduleStartTimeChange}
+                            />
+                          )}
+
+                        </View>
+                      </View>
+                    </Modal></View> : <></>}
 
                 <Text style={styles.sectionTitle}>Add New Position</Text>
                 <Text style={styles.label}>Position Name:</Text>
@@ -612,7 +736,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", // Distribute space evenly
   },
   flatList: {
-    width: "90%"
+    width: "100%"
   },
   toggleButton: {
     backgroundColor: "#4CAF50",
@@ -696,7 +820,7 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     marginTop: 20,
-    backgroundColor: "#f39c12", // Brighter color for the modal button
+    backgroundColor: COLORS.mainOrange, // Brighter color for the modal button
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,

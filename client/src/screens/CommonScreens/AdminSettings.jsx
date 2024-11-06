@@ -1,4 +1,4 @@
-import { Button, StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView } from 'react-native'
+import { Button, StyleSheet, Text, View, TouchableOpacity, TextInput, Platform, ScrollView, Modal } from 'react-native'
 import React, { useState } from 'react'
 import { COLORS } from '../../constants'
 import AccordionItem from '../../components/Utils/AccordionItem'
@@ -10,90 +10,164 @@ import Animated, {
 } from 'react-native-reanimated';
 import Feather from '@expo/vector-icons/Feather';
 import { useSelector } from 'react-redux';
+import { Picker } from '@react-native-picker/picker';
 
 
 const AdminSettings = () => {
     const guardsOpen = useSharedValue(false);
-    const extendOpen = useSharedValue(false);
+
+    const [showExtendModal, setShowExtendModal] = useState(false)
+    const [showUserModel, setShowUserModel] = useState(false)
 
     const [extendScheduleDays, setExtendScheduleDays] = useState(0)
+    const [currentUserToSetup, setCurrentUserToSetup] = useState({})
 
     const schedule = useSelector(state => state.schedule)
     const guardsOnPress = () => {
         guardsOpen.value = !guardsOpen.value;
     };
     const extendOnPress = () => {
-        extendOpen.value = !extendOpen.value;
+        setShowExtendModal(true)
     };
+
+    const handleExtendDays = (days) => {
+        setExtendScheduleDays(Number(days))
+        if (Platform.OS === 'android') {
+            setShowExtendModal(false); // Close modal when time is picked on Android
+        }
+    }
     const handleDeleteSchedule = async () => {
 
     }
     const handleExtendSchedule = async () => {
 
     }
-    const handleSetupUser = async () => {
 
+    const handleRemoveUser = async (user) => {
+
+    }
+
+    const handleRemoveUserTemp = async (user) => {
+
+    }
+    const handleSetupUser = async (user) => {
+        setShowUserModel(true)
+        console.log("User id setup: ");
+        console.log(user._id);
+        console.log(user.fullName);
+        setCurrentUserToSetup(user)
     }
     return (
         <View style={styles.container}>
             <View style={styles.content}>
                 <ScrollView style={styles.scrollView}>
-
+                    <View style={styles.mainSettingsContainer}>
+                        <TouchableOpacity
+                            style={styles.extendButton}
+                            onPress={extendOnPress}
+                        >
+                            <Text style={styles.buttonText}>Extend Schedule</Text>
+                        </TouchableOpacity>
+                        <Modal
+                            transparent={true}
+                            animationType="slide"
+                            visible={showExtendModal}
+                            onRequestClose={() => setShowExtendModal(false)}
+                        >
+                            <View style={styles.modalContainer}>
+                                <View style={styles.modalContent}>
+                                    <Text style={styles.nameText}>Choose for how long do you want to extend schedule.</Text>
+                                    <Picker
+                                        selectedValue={extendScheduleDays}
+                                        style={styles.pickerStyle}
+                                        onValueChange={(itemValue, itemIndex) =>
+                                            setExtendScheduleDays(itemValue)
+                                        }>
+                                        <Picker.Item label="1" value={1} />
+                                        <Picker.Item label="2" value={2} />
+                                        <Picker.Item label="3" value={3} />
+                                        <Picker.Item label="4" value={4} />
+                                        <Picker.Item label="5" value={5} />
+                                    </Picker>
+                                    {Platform.OS === 'ios' && (
+                                        <TouchableOpacity
+                                            style={styles.modalButton}
+                                            onPress={() => setShowExtendModal(false)}
+                                        >
+                                            <Text style={styles.modalButtonText}>Done</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            </View>
+                        </Modal>
+                        <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={handleDeleteSchedule}
+                        >
+                            <Text style={styles.buttonText}>Delete Schedule</Text>
+                        </TouchableOpacity>
+                    </View>
 
                     <TouchableOpacity
-                        style={styles.extendButton}
+                        style={styles.guardsButton}
                         onPress={guardsOnPress}
                     >
                         <Text style={styles.buttonText}>Guards</Text>
                     </TouchableOpacity>
-                    <View style={styles.parent}>
+                    <View >
                         <AccordionItem isExpanded={guardsOpen} viewKey="Accordion">
-                            <View >
+                            <View style={styles.parent}>
                                 {schedule.users.map(u =>
-                                    <View style={styles.userContainer}>
+                                    <View key={u._id} style={styles.userContainer}>
                                         <Text style={styles.nameText}>{u.fullName}</Text>
                                         <TouchableOpacity
                                             style={styles.userSetupButton}
-                                            onPress={() => handleSetupUser(u._id)}
+                                            onPress={() => handleSetupUser(u)}
                                         >
                                             <Feather name="settings" size={24} color="black" />
                                         </TouchableOpacity>
+                                        <Modal
+                                            transparent={true}
+                                            animationType="slide"
+                                            visible={showUserModel}
+                                            onRequestClose={() => setShowUserModel(false)}
+                                        >
+                                            <View style={styles.modalContainer}>
+                                                <View style={styles.modalContent}>
+                                                    <View style={{marginBottom:20}}>
+                                                        <Text style={styles.nameText}>{currentUserToSetup.fullName}</Text>
+                                                    </View>
+                                                    <View style={styles.userSetupContainer}>
+                                                        <TouchableOpacity
+                                                            style={styles.deleteButton}
+                                                            onPress={() => handleRemoveUser(currentUserToSetup)}
+                                                        >
+                                                            <Text style={styles.buttonText}>Kick</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity
+                                                            style={styles.extendButton}
+                                                            onPress={() => handleRemoveUserTemp(currentUserToSetup)}
+                                                        >
+                                                            <Text style={styles.buttonText}>Temp halt</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                    {Platform.OS === 'ios' && (
+                                                        <TouchableOpacity
+                                                            style={styles.modalButton}
+                                                            onPress={() => setShowUserModel(false)}
+                                                        >
+                                                            <Text style={styles.modalButtonText}>Back</Text>
+                                                        </TouchableOpacity>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        </Modal>
                                     </View>
                                 )}
                             </View>
                         </AccordionItem>
                     </View>
-                    <TouchableOpacity
-                        style={styles.extendButton}
-                        onPress={extendOnPress}
-                    >
-                        <Text style={styles.buttonText}>Extend Schedule</Text>
-                    </TouchableOpacity>
-                    <View style={styles.parent}>
-                        <AccordionItem isExpanded={extendOpen} viewKey="Accordion">
-                            <View>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter number of guards"
-                                    keyboardType="numeric"
-                                    value={extendScheduleDays}
-                                    onChangeText={setExtendScheduleDays}
-                                />
-                                <TouchableOpacity
-                                    style={styles.handleButton}
-                                    onPress={handleExtendSchedule}
-                                >
-                                    <Text style={styles.buttonText}>Accept</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </AccordionItem>
-                    </View>
-                    <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={handleDeleteSchedule}
-                    >
-                        <Text style={styles.buttonText}>Delete Schedule</Text>
-                    </TouchableOpacity>
+
                 </ScrollView>
             </View>
         </View>
@@ -107,12 +181,21 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#f0f0f0",
     },
+
     scrollView: {
         width: "100%"
     },
+    mainSettingsContainer: {
+        display: "flex",
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20
+    },
     nameText: {
-        fontSize: 18,
+        fontSize: 24,
         color: "#555",
+
     },
     userSetupButton: { marginRight: 10, },
     userContainer: {
@@ -126,6 +209,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 2,
+        display: 'flex',
+        flexDirection: "row",
+        justifyContent: "space-between"
     },
     userContent: {
         display: "flex",
@@ -142,41 +228,88 @@ const styles = StyleSheet.create({
         marginRight: 35,
     },
     parent: {
-        width: "90%",
+        width: "100%",
         borderRadius: 8,
+        padding: 30,
         backgroundColor: '#f8f8f8',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
-        elevation: 2
+
     },
     deleteButton: {
-        width: "100%",
+        width: "40%",
         height: 50,
         backgroundColor: COLORS.mainRed,
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 5,
-        marginBottom: 20,
-        marginTop: 20
     },
-    buttonText: {
-        color: COLORS.whiteText,
-        fontSize: 18,
-        fontWeight: "bold",
-    },
-    extendButton: {
+    guardsButton: {
         width: "100%",
         height: 50,
-        backgroundColor: COLORS.greenSubmit,
+        backgroundColor: COLORS.neutralDark,
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 5,
         marginBottom: 20,
-        marginTop: 20
+        marginTop: 20,
+        padding: 10
+    },
+    buttonText: {
+        color: COLORS.whiteText,
+        fontSize: 15,
+        fontWeight: "bold",
+    },
+    extendButton: {
+        width: "40%",
+        height: 50,
+        backgroundColor: COLORS.mainOrange,
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 5,
     },
     handleButton: {
         backgroundColor: "#f39c12",
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: "center",
+        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dimmed background
+    },
+    modalContent: {
+        backgroundColor: "#fff",
+        margin: 40,
+        borderRadius: 15,
+        padding: 40,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+    },
+    modalButton: {
+        marginTop: 20,
+        backgroundColor: "#D3D3D3", // Brighter color for the modal button
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+    },
+    modalButtonText: {
+        color: "#333",
+        fontSize: 18,
+        fontWeight: "bold",
+    },
+    pickerStyle: {
+        width: "100%"
+    },
+    userSetupContainer: {
+        width: "100%",
+        display: "flex",
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 60
     }
 })

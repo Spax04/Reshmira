@@ -17,7 +17,8 @@ interface CreateScheduleRequestBody {
   positions: { position_name: string; guard_pre_position: number }[];
   shiftTime: number; // epoch format (seconds)
   guardsPreShift: number;
-  roomId: string
+  roomId: string;
+  scheduleStartDate: number
 }
 
 export const ScheduleController = (router: any) => {
@@ -76,7 +77,7 @@ export async function getScheduleById(ctx: any): Promise<any> {
 
 export async function createSchedule(ctx: any): Promise<any> {
   try {
-    const { scheduleName, guards, positions, shiftTime, guardsPreShift, roomId } = ctx
+    const { scheduleName, guards, positions, shiftTime, guardsPreShift, roomId,scheduleStartDate } = ctx
       .request.body as CreateScheduleRequestBody;
 
     console.log("Schedule name: " + scheduleName);
@@ -124,7 +125,8 @@ export async function createSchedule(ctx: any): Promise<any> {
       guardsPreShift,
       guardsIds,
       positions,
-      shiftTimeInSeconds
+      shiftTimeInSeconds,
+      scheduleStartDate
     );
 
 
