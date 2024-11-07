@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
+import { Button } from 'react-native-elements'
+import { ROUTES } from '../../constants'
 
 // Example mock data
 const shiftsByDay = {
@@ -56,8 +58,7 @@ const shiftsByDay = {
   ]
 }
 
-const UserProfile = ({ route }) => {
-  const navigation = useNavigation() // Initialize the navigation hook
+const UserProfile = ({ route, navigation }) => {
   const user = route.params?.user || {}
   user.shifts = Object.keys(shiftsByDay).flatMap(date =>
     shiftsByDay[date].map(shift => ({ ...shift }))
@@ -65,10 +66,8 @@ const UserProfile = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-        <Text style={styles.backBtnText}>Back</Text>
-      </TouchableOpacity>
       <View style={styles.content}>
+      <Button title="Back" type="outline" onPress={navigation.navigate(ROUTES.HOME)} />
         <Text style={styles.nameText}>{user.full_name}</Text>
         <Text style={styles.shiftsHeader}>Shifts:</Text>
         <FlatList

@@ -1,4 +1,4 @@
-import { View, Text, Button } from 'react-native'
+import { View, Text, Button, TouchableOpacity } from 'react-native'
 import React, { useEffect } from 'react'
 import {
   createDrawerNavigator,
@@ -7,10 +7,11 @@ import {
   DrawerItem
 } from '@react-navigation/drawer'
 import { NavigationContainer, useNavigation } from '@react-navigation/native'
-import { ROUTES, VARS } from '../constants'
+import { COLORS, ROUTES, VARS } from '../constants'
 import ButtomTabNavigator from './ButtomTabNavigator'
 import Settings from '../screens/CommonScreens/Settings' // Ensure this is the correct path to your Settings screen
 import RoomNavigator from './RoomNavigator'
+import UserNavigator from "./UserNavigator"
 import { useSelector } from 'react-redux'
 import { removeUser } from '../store/reducers/userReducer'
 import { useDispatch } from 'react-redux'
@@ -19,6 +20,8 @@ import { scheduleRemove, setSchedule, setShiftsList } from '../store/reducers/sc
 import api from "../utils/requstInterceptor";
 import DeveloperSignature from '../components/Utils/DeveloperSignature'
 import AdminSettings from '../screens/CommonScreens/AdminSettings'
+import Icon from 'react-native-vector-icons/MaterialIcons' // Import the icon library
+import { navigate } from '../utils/navigationService'
 
 const Drawer = createDrawerNavigator()
 
@@ -44,7 +47,19 @@ const CustomDrawerContent = props => {
   )
 }
 
-const DrawerNavigator = ({ navigation }) => {
+const DrawerNavigator = () => {
+
+  const navigation = useNavigation()
+
+  const navigateToAdminSettigns = () => {
+    console.log("TRYING REDIRECT");
+    try {
+
+      navigation.navigate(ROUTES.USER_STACK, { screen: ROUTES.ADMIN_SETTINGS });
+    } catch (e) {
+      console.log(e);
+    }
+  }
   const user = useSelector(state => state.user)
   const schedule = useSelector(state => state.schedule)
   const room = useSelector(state => state.room)
@@ -86,15 +101,33 @@ const DrawerNavigator = ({ navigation }) => {
     <Drawer.Navigator
       drawerContent={props => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerTitle: `Welcome, ${user.full_name}`
+        headerTitle: `Welcome, ${user.full_name}`,
+        headerStyle: {
+          backgroundColor: COLORS.mainYellowL, // Set your desired background color here
+        },
+        headerTintColor: '#000',
       }}
+      
     >
       {room.scheduleId !== null ? (
         <Drawer.Screen
           name={ROUTES.HOME_DRAWER}
           component={ButtomTabNavigator}
           options={{
-            title: 'Main'
+            title: 'Main',
+            headerRight: () => (
+              (room.scheduleId !== null && user._id === room.adminId) ?
+                (<TouchableOpacity onPress={navigateToAdminSettigns}
+                >
+
+                  <Icon
+                    name="admin-panel-settings"
+                    size={30}
+                    color="#000"
+                    style={{ marginLeft: 15, marginRight: 10 }}
+                  />
+                </TouchableOpacity>) : <></>
+            )
           }}
         />
       ) : (
@@ -113,14 +146,15 @@ const DrawerNavigator = ({ navigation }) => {
           title: 'Settings'
         }}
       />
-      {(room.scheduleId !== null && user._id === room.adminId) ?
+      {/* {(room.scheduleId !== null && user._id === room.adminId) ?
         <Drawer.Screen
           name={ROUTES.ADMIN_SETTINGS}
           component={AdminSettings}
           options={{
-            title: 'Admin Settings'
+            title: 'Admin Settings',
+
           }}
-        /> : <></>}
+        /> : <></>} */}
     </Drawer.Navigator>
   )
 }
@@ -138,4 +172,5 @@ const styles = {
     fontSize: 14,
     color: '#777', // Light gray for subtle display
   },
+
 };

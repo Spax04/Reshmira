@@ -1,6 +1,6 @@
-import { Button, StyleSheet, Text, View, TouchableOpacity, TextInput, Platform, ScrollView, Modal } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Platform, ScrollView, Modal } from 'react-native'
 import React, { useState } from 'react'
-import { COLORS } from '../../constants'
+import { COLORS, ROUTES } from '../../constants'
 import AccordionItem from '../../components/Utils/AccordionItem'
 import Animated, {
     useAnimatedStyle,
@@ -11,9 +11,10 @@ import Animated, {
 import Feather from '@expo/vector-icons/Feather';
 import { useSelector } from 'react-redux';
 import { Picker } from '@react-native-picker/picker';
+import { Button, ListItem, } from 'react-native-elements'
 
 
-const AdminSettings = () => {
+const AdminSettings = ({ navigation }) => {
     const guardsOpen = useSharedValue(false);
 
     const [showExtendModal, setShowExtendModal] = useState(false)
@@ -60,14 +61,14 @@ const AdminSettings = () => {
     return (
         <View style={styles.container}>
             <View style={styles.content}>
+                <Button title="Back" type="outline" onPress={() => navigation.goBack()} />
                 <ScrollView style={styles.scrollView}>
                     <View style={styles.mainSettingsContainer}>
-                        <TouchableOpacity
-                            style={styles.extendButton}
+
+                        <Button
+                            title="Extend schedule"
                             onPress={extendOnPress}
-                        >
-                            <Text style={styles.buttonText}>Extend Schedule</Text>
-                        </TouchableOpacity>
+                        />
                         <Modal
                             transparent={true}
                             animationType="slide"
@@ -100,72 +101,66 @@ const AdminSettings = () => {
                                 </View>
                             </View>
                         </Modal>
-                        <TouchableOpacity
-                            style={styles.deleteButton}
+
+                        <Button
+                            title="Delete schedule"
                             onPress={handleDeleteSchedule}
-                        >
-                            <Text style={styles.buttonText}>Delete Schedule</Text>
-                        </TouchableOpacity>
+                        />
                     </View>
 
-                    <TouchableOpacity
-                        style={styles.guardsButton}
-                        onPress={guardsOnPress}
-                    >
-                        <Text style={styles.buttonText}>Guards</Text>
-                    </TouchableOpacity>
+
                     <View >
-                        <AccordionItem isExpanded={guardsOpen} viewKey="Accordion">
-                            <View style={styles.parent}>
-                                {schedule.users.map(u =>
-                                    <View key={u._id} style={styles.userContainer}>
-                                        <Text style={styles.nameText}>{u.fullName}</Text>
-                                        <TouchableOpacity
-                                            style={styles.userSetupButton}
-                                            onPress={() => handleSetupUser(u)}
-                                        >
-                                            <Feather name="settings" size={24} color="black" />
-                                        </TouchableOpacity>
-                                        <Modal
-                                            transparent={true}
-                                            animationType="slide"
-                                            visible={showUserModel}
-                                            onRequestClose={() => setShowUserModel(false)}
-                                        >
-                                            <View style={styles.modalContainer}>
-                                                <View style={styles.modalContent}>
-                                                    <View style={{marginBottom:20}}>
-                                                        <Text style={styles.nameText}>{currentUserToSetup.fullName}</Text>
-                                                    </View>
-                                                    <View style={styles.userSetupContainer}>
-                                                        <TouchableOpacity
-                                                            style={styles.deleteButton}
-                                                            onPress={() => handleRemoveUser(currentUserToSetup)}
-                                                        >
-                                                            <Text style={styles.buttonText}>Kick</Text>
-                                                        </TouchableOpacity>
-                                                        <TouchableOpacity
-                                                            style={styles.extendButton}
-                                                            onPress={() => handleRemoveUserTemp(currentUserToSetup)}
-                                                        >
-                                                            <Text style={styles.buttonText}>Temp halt</Text>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                    {Platform.OS === 'ios' && (
-                                                        <TouchableOpacity
-                                                            style={styles.modalButton}
-                                                            onPress={() => setShowUserModel(false)}
-                                                        >
-                                                            <Text style={styles.modalButtonText}>Back</Text>
-                                                        </TouchableOpacity>
-                                                    )}
+                        <View style={styles.parent}>
+                            {schedule.users.map(u =>
+                                <View key={u._id}  style={styles.userContainer}>
+                                    
+                                    <Text style={styles.nameText}>{u.fullName}</Text>
+                                    <TouchableOpacity
+                                        style={styles.userSetupButton}
+                                        onPress={() => handleSetupUser(u)}
+                                    >
+                                        <Feather name="settings" size={24} color="black" />
+                                    </TouchableOpacity>
+                                    <Modal
+                                        transparent={true}
+                                        animationType="slide"
+                                        visible={showUserModel}
+                                        onRequestClose={() => setShowUserModel(false)}
+                                    >
+                                        <View style={styles.modalContainer}>
+                                            <View style={styles.modalContent}>
+                                                <View style={{ marginBottom: 20 }}>
+                                                    <Text style={styles.nameText}>{currentUserToSetup.fullName}</Text>
                                                 </View>
+                                                <View style={styles.userSetupContainer}>
+                                                    <TouchableOpacity
+                                                        style={styles.deleteButton}
+                                                        onPress={() => handleRemoveUser(currentUserToSetup)}
+                                                    >
+                                                        <Text style={styles.buttonText}>Kick</Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity
+                                                        style={styles.extendButton}
+                                                        onPress={() => handleRemoveUserTemp(currentUserToSetup)}
+                                                    >
+                                                        <Text style={styles.buttonText}>Temp halt</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                                {Platform.OS === 'ios' && (
+                                                    <TouchableOpacity
+                                                        style={styles.modalButton}
+                                                        onPress={() => setShowUserModel(false)}
+                                                    >
+                                                        <Text style={styles.modalButtonText}>Back</Text>
+                                                    </TouchableOpacity>
+                                                )}
                                             </View>
-                                        </Modal>
-                                    </View>
-                                )}
-                            </View>
-                        </AccordionItem>
+                                        </View>
+                                    </Modal>
+                                </View>
+                                
+                            )}
+                        </View>
                     </View>
 
                 </ScrollView>
@@ -190,7 +185,8 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 20
+        marginTop: 20,
+        marginBottom: 20
     },
     nameText: {
         fontSize: 24,
@@ -226,12 +222,11 @@ const styles = StyleSheet.create({
         marginTop: 25,
         marginLeft: 35,
         marginRight: 35,
+        paddingTop: 50
     },
     parent: {
         width: "100%",
         borderRadius: 8,
-        padding: 30,
-        backgroundColor: '#f8f8f8',
 
     },
     deleteButton: {
