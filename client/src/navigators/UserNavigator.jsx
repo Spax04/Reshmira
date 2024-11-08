@@ -10,11 +10,11 @@ const UserNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: false
+        headerShown: true
       }}
     >
-      <Stack.Screen name={ROUTES.USER_PROFILE} component={UserProfile} />
-      <Stack.Screen name={ROUTES.ADMIN_SETTINGS} component={AdminSettings}/>
+      <Stack.Screen options={{title: "User settings"}} name={ROUTES.USER_PROFILE} component={UserProfile} />
+      <Stack.Screen options={{title: "Schedule settings"}} name={ROUTES.ADMIN_SETTINGS} component={AdminSettings}/>
     </Stack.Navigator>
   )
 }

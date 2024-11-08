@@ -7,6 +7,7 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 
+
 const AccordionItem = ({
     isExpanded,
     children,

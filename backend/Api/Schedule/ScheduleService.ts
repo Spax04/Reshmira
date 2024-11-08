@@ -21,12 +21,14 @@ export class ScheduleService {
     scheduleStartDate: number
   ) => {
     try {
+      console.log("Schedule start current start time");
       let currentDateEpoch = Math.floor(scheduleStartDate)
-      let weekFromNowEpoch = Math.floor(
-        (Date.now() + 3 * 24 * 60 * 60 * 1000) / 1000
+      console.log(currentDateEpoch);
+      let threeDaysSinceStart = Math.floor(
+        (scheduleStartDate + 3 * 24 * 60 * 60)
       )
       const shifts: mongoose.Types.ObjectId[] = []
-      while (currentDateEpoch < weekFromNowEpoch) {
+      while (currentDateEpoch < threeDaysSinceStart) {
         const startDate = new Date(currentDateEpoch * 1000)
         const endDate = new Date((currentDateEpoch + shiftTime) * 1000)
 
@@ -70,7 +72,7 @@ export class ScheduleService {
         currentDateEpoch += shiftTime
       }
 
-      
+
 
       const currentScheduleResponse = await new ScheduleDal().getScheduleById(
         new mongoose.Types.ObjectId(scheduleId)
@@ -155,5 +157,5 @@ export class ScheduleService {
     })
   }
 
-  
+
 }

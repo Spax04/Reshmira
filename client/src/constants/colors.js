@@ -8,5 +8,6 @@ export default {
    mainOrange: "#f39c12",
    neutralLight: "#D3D3D3",
    neutralGray: "#A9A9A9",
-   neutralDark: "#707070"
+   neutralDark: "#707070",
+   mainBlue: "#3498db"
 }
