@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux'
 import { removeUser } from '../store/reducers/userReducer'
 import { useDispatch } from 'react-redux'
 import { removeRoom } from '../store/reducers/roomReducer'
-import { scheduleRemove, setSchedule, setShiftsList } from '../store/reducers/scheduleReducer'
+import { removeSchedule, setSchedule, setShiftsList } from '../store/reducers/scheduleReducer'
 import api from "../utils/requstInterceptor";
 import DeveloperSignature from '../components/Utils/DeveloperSignature'
 import AdminSettings from '../screens/CommonScreens/AdminSettings'
@@ -37,7 +37,7 @@ const CustomDrawerContent = props => {
         onPress={() => {
           dispatch(removeUser())
           dispatch(removeRoom())
-          dispatch(scheduleRemove())
+          dispatch(removeSchedule())
           navigation.navigate(ROUTES.LOGIN) // Navigate to UserProfile with user data
           console.log('Logout pressed')
         }}
@@ -107,7 +107,7 @@ const DrawerNavigator = () => {
         },
         headerTintColor: '#000',
       }}
-      
+
     >
       {room.scheduleId !== null ? (
         <Drawer.Screen

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  ActivityIndicator,
+  ActivityIndicator, Keyboard
 } from "react-native";
 import { useToast } from "react-native-toast-notifications";
 import DeveloperSignature from "../../components/Utils/DeveloperSignature";
@@ -18,6 +18,7 @@ import { setUser, setUserToken } from "../../store/reducers/userReducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setRoom } from "../../store/reducers/roomReducer";
 import api from "../../utils/requstInterceptor";
+import LoadingComponent from "../../components/Utils/LoadingComponent";
 
 const LoginScreen = ({ navigation }) => {
   const toast = useToast();
@@ -52,6 +53,7 @@ const LoginScreen = ({ navigation }) => {
   }, []);
 
   const handleLogin = async () => {
+    Keyboard.dismiss()
     try {
       if (email == "" || password == "") {
         toast.show("Please fill in all fields.", {
@@ -175,7 +177,7 @@ const LoginScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image source={LogoImage} style={styles.logo} />
-      <ActivityIndicator animating={loading} size="large" />
+      <LoadingComponent isLoading={loading} />
 
       <Text style={styles.title}>Login</Text>
       <TextInput
@@ -202,7 +204,7 @@ const LoginScreen = ({ navigation }) => {
           Forgot password?
         </Text>
       </TouchableOpacity>
-      <DeveloperSignature/>
+      <DeveloperSignature />
 
     </View>
   );

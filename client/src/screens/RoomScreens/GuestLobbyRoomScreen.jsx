@@ -7,6 +7,8 @@ import {
   FlatList,
   RefreshControl,
 } from "react-native";
+import * as Clipboard from 'expo-clipboard';
+
 import axios from "axios";
 import { COLORS, ROUTES, VARS } from "../../constants";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,6 +16,7 @@ import { removeRoom, setRoomUsers } from "../../store/reducers/roomReducer";
 import { useToast } from "react-native-toast-notifications";
 import { removeUsersRoomId, setScheduleId } from "../../store/reducers/userReducer";
 import api from "../../utils/requstInterceptor";
+import Feather from '@expo/vector-icons/Feather';
 
 const GuestLobbyRoomScreen = ({ navigation }) => {
   const toast = useToast();
@@ -24,6 +27,17 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
   const room = useSelector((state) => state.room);
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
+
+  const copyToClipboard = async () => {
+    await Clipboard.setStringAsync(roomCode);
+    toast.show("Room code was copied!", {
+      type: "normal",
+      placement: "bottom",
+      duration: 4000,
+      offset: 30,
+      animationType: "slide-in",
+    });
+  };
 
   useEffect(() => {
     if (room._id) {
@@ -128,12 +142,24 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.content}>
         {roomCode ? (
-          <Text style={styles.roomCode}>Room Code: {roomCode}</Text>
+          <View style={styles.codeContainer}>
+
+            <Text style={styles.roomCodeHeader}>Room Code </Text>
+            <View style={styles.codeInnerContainer}>
+              <Text style={styles.roomCode}>{roomCode}</Text>
+              <TouchableOpacity onPress={() => copyToClipboard()}>
+                <Feather name="copy" size={35} color="black" />
+              </TouchableOpacity>
+            </View>
+
+          </View>
         ) : null}
 
         {roomCode ? (
-          <>
-            <Text style={styles.usersHeader}>
+          <View style={styles.codeContainer}>
+
+
+            <Text style={styles.roomCodeHeader}>
               Participants ({users.length}) :
             </Text>
             <FlatList
@@ -150,14 +176,14 @@ const GuestLobbyRoomScreen = ({ navigation }) => {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }
             />
-          </>
+          </View>
         ) : null}
 
         <TouchableOpacity style={styles.leaveButton} onPress={handleLeaveRoom}>
           <Text style={styles.leaveButtonText}>Leave Room</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </View >
   );
 };
 
@@ -168,21 +194,30 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: "#f0f0f0",
+    width: "100%",
   },
   content: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     marginTop: 50,
     marginLeft: 40,
     marginRight: 40,
+
   },
   roomCode: {
+    fontSize: 35,
+    fontWeight: "bold",
+    color: "#555",
+    marginRight: 10,
+  },
+  roomCodeHeader: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
     color: "#555",
+    marginRight: 10,
+    marginBottom:5
   },
+
   leaveButton: {
     width: "100%",
     height: 50,
@@ -202,6 +237,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
     color: "#444",
+    textAlign: 'left'
   },
   userItem: {
     backgroundColor: "#fff",
@@ -234,5 +270,25 @@ const styles = StyleSheet.create({
     color: "red",
     marginBottom: 20,
   },
-  flatList: { width: "90%" },
+  flatList: {
+    width: "100%"
+  },
+  codeContainer: {
+    flexDirection: "column",
+    width: "100%",
+    marginVertical:32
+  },
+  codeInnerContainer: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
+    justifyContent: 'space-between'
+  }
 });

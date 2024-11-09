@@ -7,7 +7,7 @@ export const RoomController = (router: any) => {
   router.post("/room/create", bodyParser(), createRoom);
   router.post("/room/join", bodyParser(), joinRoom);
   router.post("/room/out", bodyParser(), leaveRoom);
-  router.post("/room/delete", bodyParser(), deleteRoom);
+  router.delete("/room/delete/:id", bodyParser(), deleteRoom);
   router.get("/room/:roomId/users", bodyParser(), usersByRoomId);
   router.get("/room/:roomId", bodyParser(), getRoomById);
 };
@@ -145,10 +145,10 @@ export async function leaveRoom(ctx: any): Promise<any> {
 }
 
 export async function deleteRoom(ctx: any): Promise<any> {
-  const { roomId } = ctx.request.body;
+  const { id } = ctx.request.params;
 
   try {
-    const roomResponse = await new RoomService().deleteRoom(roomId);
+    const roomResponse = await new RoomService().deleteRoom(id);
 
     if (!roomResponse.success) {
       ctx.body = JSON.stringify({

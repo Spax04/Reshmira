@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import DayComponent from '../../components/GroupShiftsSchedule/DayComponent';
 import moment from 'moment';
+import LoadingComponent from '../../components/Utils/LoadingComponent';
 
 const UsersShifts = ({ navigation }) => {
   const schedule = useSelector((state) => state.schedule);
@@ -49,22 +50,26 @@ const UsersShifts = ({ navigation }) => {
     }
   }, [schedule.shifts, user._id]);
 
+  useEffect(() => {
+    if (schedule.shifts.length === 0) {
+      setLoading(true)
+    } else {
+      setLoading(false)
+    }
+  }, [schedule.shifts])
   return (
     <View style={styles.container}>
-      {loading ? (
-        <ActivityIndicator animating={loading} size="large" />
-      ) : (
-        <ScrollView>
-          <Text style={styles.headerText}>Your Shifts</Text>
-          {Object.keys(userShiftsByDay).length === 0 ? (
-            <Text style={styles.noShiftsText}>No shifts available for this user.</Text>
-          ) : (
-            Object.entries(userShiftsByDay).map(([date, shifts]) => (
-              <DayComponent key={date} date={date} shifts={shifts} navigation={navigation} />
-            ))
-          )}
-        </ScrollView>
-      )}
+      <LoadingComponent isLoading={loading} />
+      <ScrollView>
+        <Text style={styles.headerText}>Your Shifts</Text>
+        {Object.keys(userShiftsByDay).length === 0 ? (
+          <Text style={styles.noShiftsText}>No shifts available for you.</Text>
+        ) : (
+          Object.entries(userShiftsByDay).map(([date, shifts]) => (
+            <DayComponent key={date} date={date} shifts={shifts} navigation={navigation} />
+          ))
+        )}
+      </ScrollView>
     </View>
   );
 };

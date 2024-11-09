@@ -9,7 +9,7 @@ const initialState = {
     guards_pre_shift: null,
     positions: [],
     shift_time: null,
-    createdAt:null,
+    createdAt: null,
     updatedAt: null,
 };
 
@@ -47,7 +47,7 @@ export const scheduleSlice = createSlice({
                 .then(() => console.log("Schedule data stored in AsyncStorage"))
                 .catch((error) => console.error("Error storing schedule:", error));
         },
-        scheduleRemove: (state) => {
+        removeSchedule: (state) => {
             state._id = null
             state.name = ""
             state.users = []
@@ -80,7 +80,7 @@ export const scheduleSlice = createSlice({
     },
 });
 
-export const { setSchedule, setShiftsList, scheduleRemove, initializeScheduleState } =
+export const { setSchedule, setShiftsList, removeSchedule, initializeScheduleState } =
     scheduleSlice.actions;
 
 export default scheduleSlice.reducer;

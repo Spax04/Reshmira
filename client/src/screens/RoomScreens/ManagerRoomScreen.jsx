@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  RefreshControl, TextInput, Platform, Modal, ActivityIndicator
+  RefreshControl, TextInput, Platform, Modal
 } from "react-native";
 import axios from "axios";
 import { COLORS, ROUTES, VARS } from "../../constants";
@@ -15,15 +15,14 @@ import { useToast } from "react-native-toast-notifications";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import api from "../../utils/requstInterceptor";
-import { setSchedule, setShiftsList } from "../../store/reducers/scheduleReducer";
 import { setScheduleId } from "../../store/reducers/roomReducer";
-import Animated, {
-  useAnimatedStyle,
-  useDerivedValue,
+import {
   useSharedValue,
-  withTiming,
 } from 'react-native-reanimated';
 import AccordionItem from "../../components/Utils/AccordionItem";
+import LoadingComponent from "../../components/Utils/LoadingComponent";
+import * as Clipboard from 'expo-clipboard';
+import Feather from '@expo/vector-icons/Feather';
 
 
 const ManagerRoomScreen = ({ navigation }) => {
@@ -36,7 +35,16 @@ const ManagerRoomScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false)
   const dispatch = useDispatch();
 
-
+  const copyToClipboard = async () => {
+    await Clipboard.setStringAsync(roomCode);
+    toast.show("Room code was copied!", {
+      type: "normal",
+      placement: "bottom",
+      duration: 4000,
+      offset: 30,
+      animationType: "slide-in",
+    });
+  };
   const scheduleSettingsOpen = useSharedValue(false);
   const positionsSettingsOpen = useSharedValue(false);
 
@@ -79,7 +87,6 @@ const ManagerRoomScreen = ({ navigation }) => {
       };
 
       setPositionList((prevPositions) => [...prevPositions, newPosition]);
-
       setNewPositionName("");
       setNewGuardPrePosition("");
     } else {
@@ -97,8 +104,7 @@ const ManagerRoomScreen = ({ navigation }) => {
     navigation.navigate(ROUTES.LOBBY_ROOM);
 
     try {
-      const { data: roomDeleteResponse } = await api.post(`${VARS.API_URL}/room/delete`, { roomId: room._id },);
-      console.log(roomDeleteResponse);
+      const { data: roomDeleteResponse } = await api.delete(`${VARS.API_URL}/room/delete/${room._id}`);
 
       if (!roomDeleteResponse.success) {
         toast.show("Error on deleting room.", {
@@ -128,15 +134,8 @@ const ManagerRoomScreen = ({ navigation }) => {
     let formatedScheduleDate
 
     if (Platform.OS === 'android') {
-      console.log("schedule androind date");
-      console.log(scheduleDate);
-      console.log(scheduleTimeStart);
-  
-
       scheduleDate.setHours(scheduleTimeStart.getHours());
       scheduleDate.setMinutes(scheduleTimeStart.getMinutes());
-
-      console.log(scheduleDate);
 
       formatedScheduleDate = scheduleDate.getTime() / 1000;
     } else {
@@ -197,14 +196,7 @@ const ManagerRoomScreen = ({ navigation }) => {
       roomId: room._id,
       scheduleStartDate: formatedScheduleDate
     }
-    console.log("Schedule name: " + scheduleName);
-    console.log("positions: " + [...positionList]);
-    console.log("Guards: " + [...users]);
-    console.log("Shift time: " + formattedShiftTime);
-    console.log("Guards pre shift: " + totalGuardsPreShift);
-    console.log("Schedule date: " + formatedScheduleDate);
 
-    console.log({ ...newSchedule });
     try {
 
       const { data: scheduleResponse } = await api.post(`${VARS.API_URL}/schedule/create/`, newSchedule)
@@ -217,22 +209,11 @@ const ManagerRoomScreen = ({ navigation }) => {
           offset: 30,
           animationType: "slide-in",
         });
-        console.log("seeting schedule to reduser");
-        console.log("starting retriving shifts");
-        const { data: shiftResponse } = await api.post(`${VARS.API_URL}/shift/get-list/`, { shiftsIds: scheduleResponse.data.shifts })
-        scheduleResponse.data.shifts = []
-        dispatch(setSchedule(scheduleResponse.data))
-        console.log("SCHEDULE ID:" + scheduleResponse.data._id);
+
         dispatch(setScheduleId(scheduleResponse.data._id))
 
-        console.log(shiftResponse.data);
-        dispatch(setShiftsList(shiftResponse.data))
-
-        console.log("tryin navigate to home");
         navigation.navigate(ROUTES.HOME);
-        setLoading(false)
       } else {
-        setLoading(false)
         toast.show(scheduleResponse.msg, {
           type: "danger",
           placement: "bottom",
@@ -242,8 +223,16 @@ const ManagerRoomScreen = ({ navigation }) => {
         });
       }
     } catch (err) {
-      setLoading(false)
       console.log(err.message);
+      toast.show(err.message, {
+        type: "danger",
+        placement: "bottom",
+        duration: 4000,
+        offset: 30,
+        animationType: "slide-in",
+      });
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -295,10 +284,9 @@ const ManagerRoomScreen = ({ navigation }) => {
       const { data: removeUserResponse } = await api.post(`${VARS.API_URL}/room/out`, { secret: room.secret, participantId: userId },);
 
       if (removeUserResponse.success) {
-        // Filter out the removed user from local state
         const updatedUsers = users.filter((user) => user._id !== userId);
         setUsers(updatedUsers);
-        dispatch(setRoomUsers(updatedUsers)); // Update Redux state
+        dispatch(setRoomUsers(updatedUsers));
         toast.show("User removed successfully.", {
           type: "success",
           placement: "bottom",
@@ -357,34 +345,29 @@ const ManagerRoomScreen = ({ navigation }) => {
 
 
 
-  // Handler for time picker
-  const onShiftTimeChange = (event, selectedTime) => {
-    console.log("SELECTED TIME: " + selectedTime);
-    setShiftTime(selectedTime);
+  const onShiftTimeChange = (selectedTime) => {
+    const time = selectedTime.nativeEvent.timestamp;
+
+    setShiftTime(new Date(time));
     if (Platform.OS === 'android') {
-      setShowShiftTimeModal(false); // Close modal when time is picked on Android
+      setShowShiftTimeModal(false);
     }
   };
 
-  const onScheduleDateChange = (event, date) => {
-    console.log("SELECTED Schedule StartDate: " + date);
-    console.log(date.getTime() / 1000);
-
-    setScheduleDate(date);
+  const onScheduleDateChange = (date) => {
+    setScheduleDate(new Date(date.nativeEvent.timestamp));
     if (Platform.OS === 'android') {
-      setShowScheduleStartDateModal(false); // Close modal when date is picked on Android
+      setShowScheduleStartDateModal(false);
     }
   };
 
-  const onScheduleStartTimeChange = (event, selectedTime) => {
-    console.log("SELECTED TIME: " + selectedTime);
-    setScheduleTimeStart(selectedTime);
+  const onScheduleStartTimeChange = (selectedTime) => {
+    setScheduleTimeStart(new Date(selectedTime.nativeEvent.timestamp));
     if (Platform.OS === 'android') {
-      setShowScheduleStartTimeModal(false); // Close modal when time is picked on Android
+      setShowScheduleStartTimeModal(false);
     }
   };
 
-  // Close the modal manually for iOS after time is picked
   const closeShiftTimeModal = () => {
     setShowShiftTimeModal(false);
   };
@@ -393,6 +376,8 @@ const ManagerRoomScreen = ({ navigation }) => {
     setShowScheduleStartDateModal(false);
   };
   const formatTime = (time) => {
+    console.log("TIME");
+    console.log(time);
     return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -420,7 +405,9 @@ const ManagerRoomScreen = ({ navigation }) => {
 
 
   const onScheduleSettingsOpen = () => {
+
     scheduleSettingsOpen.value = !scheduleSettingsOpen.value
+    console.log(scheduleSettingsOpen);
   }
   const onPositionSettingsOpen = () => {
     positionsSettingsOpen.value = !positionsSettingsOpen.value
@@ -428,12 +415,21 @@ const ManagerRoomScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <LoadingComponent isLoading={loading} />
       <View style={styles.content}>
         {roomCode ? (
-          <Text style={styles.roomCode}>Room Code: {roomCode}</Text>
-        ) : null}
-        <ActivityIndicator animating={loading} size="large" />
+          <View style={styles.codeContainer}>
 
+            <Text style={styles.roomCodeHeader}>Room Code </Text>
+            <View style={styles.codeInnerContainer}>
+              <Text style={styles.roomCode}>{roomCode}</Text>
+              <TouchableOpacity onPress={() => copyToClipboard()}>
+                <Feather name="copy" size={35} color="black" />
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        ) : null}
         <TouchableOpacity style={styles.createScheduleButton} onPress={handleCreateSchedule}>
           <Text style={styles.buttonText}>Create Schedule</Text>
         </TouchableOpacity>
@@ -446,7 +442,9 @@ const ManagerRoomScreen = ({ navigation }) => {
           ListHeaderComponent={
 
             <View >
-              <TouchableOpacity style={styles.accordionScheduleButton} onPress={onScheduleSettingsOpen}>
+              <TouchableOpacity style={[
+                styles.accordionScheduleButton,
+              ]} onPress={() => onScheduleSettingsOpen()}>
                 <Text style={styles.deleteButtonText}>Schedule settings</Text>
               </TouchableOpacity>
               <AccordionItem isExpanded={scheduleSettingsOpen} viewKey="AccordionSchedule">
@@ -475,8 +473,8 @@ const ManagerRoomScreen = ({ navigation }) => {
                     onRequestClose={() => setShowShiftTimeModal(false)}
                   >
                     <View style={styles.modalContainer}>
-                      <View style={styles.modalContent}>
-                        {Platform.OS === 'ios' && (
+                      {Platform.OS === 'ios' && (
+                        <View style={styles.modalContent}>
                           <View style={styles.pickerContainer}>
                             <DateTimePicker
                               value={shiftTime}
@@ -495,22 +493,22 @@ const ManagerRoomScreen = ({ navigation }) => {
                             </TouchableOpacity>
                           </View>
 
-                        )}
-                        {Platform.OS === 'android' && (
-                          <View style={styles.pickerContainer}>
-                            <DateTimePicker
-                              value={shiftTime}
-                              mode="time"
-                              is24Hour={true}
-                              display="spinner"
-                              onChange={onShiftTimeChange}
-                              minuteInterval={15}
-                            />
-                          </View>
-                        )}
+                        </View>
+                      )}
+                      {Platform.OS === 'android' && (
+                        <View style={styles.pickerContainer}>
+                          <DateTimePicker
+                            value={shiftTime}
+                            mode="time"
+                            is24Hour={true}
+                            display="spinner"
+                            onChange={onShiftTimeChange}
+                            minuteInterval={15}
+                          />
+                        </View>
+                      )}
 
 
-                      </View>
                     </View>
                   </Modal>
 
@@ -529,8 +527,8 @@ const ManagerRoomScreen = ({ navigation }) => {
                     onRequestClose={() => setShowScheduleStartDateModal(false)}
                   >
                     <View style={styles.modalContainer}>
-                      <View style={styles.modalContent}>
-                        {Platform.OS === 'ios' && (
+                      {Platform.OS === 'ios' && (
+                        <View style={styles.modalContent}>
                           <View style={styles.pickerContainer}>
                             <DateTimePicker
                               value={new Date(scheduleDate)}
@@ -541,25 +539,26 @@ const ManagerRoomScreen = ({ navigation }) => {
                               minuteInterval={15}
                             />
                           </View>
-                        )}
-                        {Platform.OS === 'android' && (
+                          <TouchableOpacity
+                            style={styles.modalButton}
+                            onPress={closeScheduleDateModal}
+                          >
+                            <Text style={styles.modalButtonText}>Done</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                      {Platform.OS === 'android' && (
 
-                          <DateTimePicker
-                            value={new Date(scheduleDate)}
-                            mode="date"
-                            is24Hour={true}
-                            display="default"
-                            onChange={onScheduleDateChange}
-                          />
-                        )}
-                        <TouchableOpacity
-                          style={styles.modalButton}
-                          onPress={closeScheduleDateModal}
-                        >
-                          <Text style={styles.modalButtonText}>Done</Text>
-                        </TouchableOpacity>
+                        <DateTimePicker
+                          value={new Date(scheduleDate)}
+                          mode="date"
+                          is24Hour={true}
+                          display="default"
+                          onChange={onScheduleDateChange}
+                        />
+                      )}
 
-                      </View>
+
                     </View>
                   </Modal>
 
@@ -580,22 +579,20 @@ const ManagerRoomScreen = ({ navigation }) => {
                         onRequestClose={() => setShowScheduleStartTimeModal(false)}
                       >
                         <View style={styles.modalContainer}>
-                          <View style={styles.modalContent}>
 
-                            {Platform.OS === 'android' && (
+                          {Platform.OS === 'android' && (
 
-                              <DateTimePicker
-                                value={scheduleTimeStart}
-                                mode="time"
-                                is24Hour={true}
-                                display="spinner"
-                                onChange={onScheduleStartTimeChange}
-                                minuteInterval={15}
+                            <DateTimePicker
+                              value={scheduleTimeStart}
+                              mode="time"
+                              is24Hour={true}
+                              display="spinner"
+                              onChange={onScheduleStartTimeChange}
+                              minuteInterval={15}
 
-                              />
-                            )}
+                            />
+                          )}
 
-                          </View>
                         </View>
                       </Modal>
                     </View> : <></>}
@@ -636,7 +633,7 @@ const ManagerRoomScreen = ({ navigation }) => {
                     {renderPositions()}
                   </View>
                 </AccordionItem>
-                <Text style={styles.usersHeader}>
+                <Text style={styles.roomCodeHeader}>
                   Connected Users ({users.length}) :
                 </Text>
               </View>
@@ -698,19 +695,13 @@ const styles = StyleSheet.create({
   pickerContainer: {
     marginBottom: 20,
   },
-  roomCode: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#555",
-  },
   createScheduleButton: {
     width: "100%",
     height: 50,
     backgroundColor: COLORS.mainYellowL,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 5,
+    borderRadius: 10,
     marginBottom: 20,
   },
   accordionScheduleButton: {
@@ -719,19 +710,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.mainBlue,
     justifyContent: "center",
     alignItems: "center",
-    borderTopLeftRadius: 10,
-    borderTopEndRadius: 10,
-    marginTop: 20,
-  },
-  accordionScheduleButtonOpen: {
-    width: "100%",
-    height: 50,
-    backgroundColor: COLORS.mainBlue,
-    justifyContent: "center",
-    alignItems: "center",
     borderRadius: 10,
     marginTop: 20,
   },
+
   deleteButton: {
     width: "100%",
     height: 50,
@@ -788,12 +770,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  usersHeader: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#444",
-  },
+
   userItem: {
     backgroundColor: "#fff",
     padding: 15,
@@ -819,30 +796,9 @@ const styles = StyleSheet.create({
   flatList: {
     width: "100%"
   },
-  toggleButton: {
-    backgroundColor: "#4CAF50",
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  toggleButtonText: {
-    color: "#fff",
-    fontSize: 18,
-  },
-  toggleContainer: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "flex-start",
-    alignItems: "center",
-  },
-
-
   settingsContainer: {
     backgroundColor: "#fff",
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-
+    borderRadius: 10,
     width: "100%",
     padding: 15
     // Light background for better contrast
@@ -938,5 +894,36 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  codeContainer: {
+    flexDirection: "column",
+    width: "100%",
+    marginVertical: 32
+  },
+  codeInnerContainer: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
+    justifyContent: 'space-between'
+  },
+  roomCode: {
+    fontSize: 35,
+    fontWeight: "bold",
+    color: "#555",
+    marginRight: 10,
+  },
+  roomCodeHeader: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#555",
+    marginBottom: 5,
+    marginTop: 15
   },
 });

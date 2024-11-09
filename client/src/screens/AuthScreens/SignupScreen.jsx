@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  ActivityIndicator, // Import Image component from react-native
+  ActivityIndicator,Keyboard // Import Image component from react-native
 } from "react-native";
 import { COLORS, ROUTES, VARS } from "../../constants";
 
@@ -15,6 +15,7 @@ import LogoImage from "../../../assets/images/logo.png";
 import axios from "axios";
 import { useToast } from "react-native-toast-notifications";
 import DeveloperSignature from "../../components/Utils/DeveloperSignature";
+import LoadingComponent from "../../components/Utils/LoadingComponent";
 
 const SignupScreen = ({ navigation }) => {
   const toast = useToast();
@@ -26,6 +27,7 @@ const SignupScreen = ({ navigation }) => {
   const [fullName, setFullName] = useState("");
 
   const handleSignup = async () => {
+    Keyboard.dismiss()
     setLoading(true);
     try {
       if (
@@ -122,8 +124,8 @@ const SignupScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <LoadingComponent isLoading={loading}/>
       <Image source={LogoImage} style={styles.logo} />
-      <ActivityIndicator animating={loading} size="large" />
       <Text style={styles.title}>Sign Up</Text>
       <TextInput
         style={styles.input}

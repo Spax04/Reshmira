@@ -5,7 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
+  ActivityIndicator,Keyboard
 } from "react-native";
 import axios from "axios";
 import { COLORS, ROUTES, VARS } from "../../constants";
@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { setRoom } from "../../store/reducers/roomReducer";
 import { useToast } from "react-native-toast-notifications";
+import LoadingComponent from "../../components/Utils/LoadingComponent";
 
 const JoinRoomScreen = () => {
   const toast = useToast()
@@ -23,6 +24,8 @@ const JoinRoomScreen = () => {
   const [loading, setLoading] = useState(false);
 
   const handleJoinRoom = async () => {
+    Keyboard.dismiss()
+
     if (roomCode.length !== 6) {
       toast.show("Room code must be 6 characters long.", {
         type: "warning",
@@ -104,6 +107,7 @@ const JoinRoomScreen = () => {
 
   return (
     <View style={styles.container}>
+      <LoadingComponent isLoading={loading} />
       <TouchableOpacity
         style={styles.backBtn}
         onPress={() => navigation.goBack()}
@@ -111,7 +115,6 @@ const JoinRoomScreen = () => {
         <Text style={styles.backBtnText}>Back</Text>
       </TouchableOpacity>
       <View style={styles.content}>
-        <ActivityIndicator animating={loading} size="large" />
 
         <Text style={styles.title}>Join Room</Text>
         <TextInput

@@ -35,38 +35,32 @@ export class RoomDal {
 
   getRoomById = async (id: mongoose.Types.ObjectId) => {
     try {
-      // Ensure Mongoose is connected
       await mongoose.connect(process.env.DATABASE_URL as string);
 
       if (mongoose.connection.readyState !== 1) {
         throw new Error("MongoDB is not connected");
       }
 
-      // Find the room by ID
       const room = await RoomModel.findById(id).exec();
 
       if (!room) {
         throw "Room not exist";
       }
 
-      // Fetch the users by their IDs in the room
       const users = await UserModel.find({
-        _id: { $in: room.users }, // Match user IDs that are in the room's users array
-      }).select("_id full_name"); // Select only _id and full_name
+        _id: { $in: room.users }, 
+      }).select("_id full_name"); 
 
-      // Map the users to return an array of objects with id and full_name
       const usersWithDetails = users.map((user) => ({
         _id: user._id,
         fullName: user.full_name,
       }));
 
-      // Replace the room's users array (containing only IDs) with the full objects (id + full_name)
       const roomWithUsers = {
-        ...room.toObject(), // Convert Mongoose document to plain JS object
-        users: usersWithDetails, // Replace the users array with the populated user data
+        ...room.toObject(), 
+        users: usersWithDetails,
       };
 
-      // Return the room with the populated users array
       return {
         success: true,
         data: roomWithUsers,
@@ -82,13 +76,12 @@ export class RoomDal {
 
   getRoomBySecret = async (secret: String) => {
     try {
-      // Ensure Mongoose is connected
       await mongoose.connect(process.env.DATABASE_URL as string);
 
       if (mongoose.connection.readyState !== 1) {
         throw new Error("MongoDB is not connected");
       }
-       const trimmedSecret = secret.trim(); 
+      const trimmedSecret = secret.trim();
       console.log(secret);
 
       const data: RoomWithId = await RoomModel.findOne({
@@ -100,7 +93,7 @@ export class RoomDal {
       return { success: true, data, msg: "Room retrived by secret." };
     } catch (error) {
       console.error("Error in getRoomBySecret", error);
-      throw error; // Re-throw the error for handling in caller function
+      throw error; 
     } finally {
       await mongoose.disconnect();
     }
@@ -139,10 +132,8 @@ export class RoomDal {
 
   getUsersByRoomId = async (id: mongoose.Types.ObjectId) => {
     try {
-      // Connect to the database (will only connect if not already connected)
       await mongoose.connect(process.env.DATABASE_URL as string);
 
-      // Find the room by ID
       const room = await RoomModel.findById(id).exec();
 
       if (!room) {
@@ -153,12 +144,10 @@ export class RoomDal {
         };
       }
 
-      // Find the users by their IDs in the room
       const users = await UserModel.find({
-        _id: { $in: room.users }, // Fetch users whose IDs are in the room's users array
-      }).select("_id full_name"); // Select only the _id and full_name fields
+        _id: { $in: room.users }, 
+      }).select("_id full_name"); 
 
-      // Map the result to return an array of objects with id and full_name
       const userArray = users.map((user) => ({
         _id: user._id,
         fullName: user.full_name,
@@ -166,11 +155,10 @@ export class RoomDal {
 
       return {
         success: true,
-        data: userArray, // Return the array of objects containing id and full_name
+        data: userArray, 
         msg: "Users retrieved successfully",
       };
     } catch (error) {
-      // Catch and log any error (connection error or other)
       console.error("Error in getUsersByRoomId:", error);
 
       return {
@@ -194,4 +182,29 @@ export class RoomDal {
       mongoose.disconnect();
     }
   };
+
+  getRoomByScheduleId = async (scheduleId: mongoose.Types.ObjectId) => {
+    try {
+      await mongoose.connect(process.env.DATABASE_URL as string);
+
+      if (mongoose.connection.readyState !== 1) {
+        throw new Error("MongoDB is not connected");
+      }
+
+      const data: RoomWithId = await RoomModel.findOne({
+        schedule_id: scheduleId,
+      })
+      if (data === null) {
+        return { success: false, msg: "No room with provided schedule" };
+      }
+      return { success: true, data, msg: "Room retrived by schedule Id!" };
+    } catch (error) {
+      console.error("Error in getRoomBySecret", error);
+      throw error;
+    } finally {
+      await mongoose.disconnect();
+    }
+  };
+
+
 }

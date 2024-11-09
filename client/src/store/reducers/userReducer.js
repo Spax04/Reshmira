@@ -69,7 +69,7 @@ export const userSlice = createSlice({
       console.log(action.payload.full_name);
       state.token = action.payload.token || "";
       state._id = action.payload._id || "";
-      state.full_name = action.payload.fullName || "";
+      state.full_name = action.payload.full_name || "";
       state.role = action.payload.role || "none";
       state.shifts = action.payload.shifts || [];
       state.room_id = action.payload.roomId || null

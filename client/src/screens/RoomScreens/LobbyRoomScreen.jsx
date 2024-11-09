@@ -11,6 +11,7 @@ import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import { setRoom } from "../../store/reducers/roomReducer";
 import { useToast } from "react-native-toast-notifications";
+import LoadingComponent from "../../components/Utils/LoadingComponent";
 
 const LobbyRoomScreen = ({ navigation }) => {
   const toast = useToast();
@@ -84,7 +85,7 @@ const LobbyRoomScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator animating={loading} size="large" />
+      <LoadingComponent isLoading={loading}/>
       <Text style={styles.title}>Lobby</Text>
       <TouchableOpacity style={styles.button} onPress={handleCreateRoom}>
         <Text style={styles.buttonText}>Create Room</Text>

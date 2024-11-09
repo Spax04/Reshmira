@@ -5,11 +5,12 @@ import * as bcrypt from 'bcryptjs';
 import { User, UserWithId } from '../../db/models/user';
 import * as jwt from 'jsonwebtoken';
 import { Schedule } from '../../db/models/schedule';
-import mongoose from 'mongoose';
+import mongoose, { mongo } from 'mongoose';
 import { ScheduleDal } from '../../dal/ScheduleDal';
 import { RoomDal } from '../../dal/RoomDal';
 import { RoomWithId } from '../../db/models/room';
 import { UserDal } from '../../dal/UserDal';
+import { RoomService } from '../Room/RoomService';
 
 interface CreateScheduleRequestBody {
   scheduleName: string;
@@ -24,7 +25,7 @@ interface CreateScheduleRequestBody {
 export const ScheduleController = (router: any) => {
   router.post('/schedule/create', bodyParser(), createSchedule);
   router.get('/schedule/:id', bodyParser(), getScheduleById)
-  router.post("/schedule/guards-by-id-list",bodyParser(), )
+  router.delete("/schedule/:scheduleId/:roomId", bodyParser(), deleteSchedule)
 };
 
 export async function getScheduleById(ctx: any): Promise<any> {
@@ -42,8 +43,8 @@ export async function getScheduleById(ctx: any): Promise<any> {
 
       const response = await new UserDal().getUsersList(objectIds)
 
-      let updatedGuards : any = []
-      response.data.forEach(guard => updatedGuards.push({ _id: guard._id, fullName: guard.full_name}))
+      let updatedGuards: any = []
+      response.data.forEach(guard => updatedGuards.push({ _id: guard._id, fullName: guard.full_name }))
 
       console.log("UPDATED GUARDS");
       console.log(updatedGuards);
@@ -77,7 +78,7 @@ export async function getScheduleById(ctx: any): Promise<any> {
 
 export async function createSchedule(ctx: any): Promise<any> {
   try {
-    const { scheduleName, guards, positions, shiftTime, guardsPreShift, roomId,scheduleStartDate } = ctx
+    const { scheduleName, guards, positions, shiftTime, guardsPreShift, roomId, scheduleStartDate } = ctx
       .request.body as CreateScheduleRequestBody;
 
     console.log("Schedule name: " + scheduleName);
@@ -169,3 +170,63 @@ export async function createSchedule(ctx: any): Promise<any> {
     ctx.status = 404;
   }
 }
+
+export async function deleteSchedule(ctx: any): Promise<any> {
+
+  const { scheduleId, roomId } = ctx.request.params
+  console.log(scheduleId)
+  console.log(roomId);
+
+  try {
+    const { success: deleteScheduleSucces, msg: deleteScheduleMsg } = await new ScheduleService().deleteScheduleWithShifts(new mongoose.Types.ObjectId(scheduleId))
+
+    if (!deleteScheduleSucces) {
+
+
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: deleteScheduleMsg
+      });
+      ctx.status = 400;
+    }
+
+    const { success: roomByIdSuccess, data: roomByIdData, msg: roomByIdMsg } = await new RoomDal().getRoomById(new mongoose.Types.ObjectId(roomId))
+
+    if (!roomByIdSuccess) {
+
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: roomByIdMsg
+      });
+      ctx.status = 400;
+    }
+
+    const { success: deleteRoomByIdSuccess, msg: deleteRoomByIdMsg } = await new RoomService().deleteRoom(roomId)
+
+    if (!deleteRoomByIdSuccess) {
+      
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: deleteRoomByIdMsg
+      });
+      ctx.status = 400;
+    }
+
+    
+    ctx.body = JSON.stringify({
+      success: true,
+      msg: "Schedule was deleted Successfully!"
+    });
+    ctx.status = 200;
+
+  } catch (err) {
+    console.error('Error in Sign In', err);
+    ctx.body = JSON.stringify({
+      success: false,
+      msg: 'Running into the problem while creating schedule. Try again.',
+    });
+    ctx.status = 404;
+  }
+}
+
+

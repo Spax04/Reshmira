@@ -6,7 +6,7 @@ import {
   ScheduleWithId,
   ScheduleModel
 } from '../../db/models/schedule'
-import { Shift, GuardAssignment } from '../../db/models/shift'
+import { Shift, GuardAssignment, ShiftModel } from '../../db/models/shift'
 import { ScheduleDal } from '../../dal/ScheduleDal'
 import { ShiftDal } from '../../dal/ShiftDal'
 import { UserDal } from '../../dal/UserDal'
@@ -93,68 +93,23 @@ export class ScheduleService {
     }
   }
 
-  getScheduleById = async (id: mongoose.Types.ObjectId) => {
+  deleteScheduleWithShifts = async (id: mongoose.Types.ObjectId) => {
+
     try {
-      // Ensure Mongoose is connected
-      await mongoose.connect(process.env.DATABASE_URL as string)
 
-      if (mongoose.connection.readyState !== 1) {
-        throw new Error('MongoDB is not connected')
-      }
+      const { success: scheduleSuccess, data: scheduleData, msg: scheduleMsg } = await new ScheduleDal().getScheduleById(new mongoose.Types.ObjectId(id))
 
-      const data = await ScheduleModel.findById(id).exec()
-      if (data != null) {
-        return { success: true, data, msg: 'user retrived by id' }
-      } else {
-        throw 'User not exist'
+      if (!scheduleSuccess) {
+        return { success: false, msg: scheduleMsg }
       }
-    } catch (error) {
-      console.error('Error in getUser:', error)
-      throw error // Re-throw the error for handling in caller function
+      await ShiftModel.deleteMany({ _id: { $in: scheduleData.shifts } })
+
+      await new ScheduleDal().deleteSchedule(id)
+
+      return { success: true, msg: "Schedule with shifts was deleted successfully!" }
+    } catch (err) {
+      return { success: false, msg: "Error on schedule delete: ", err }
     }
-  }
-
-  updateSchedule = (
-    id: mongoose.Types.ObjectId,
-    updatedUserData: Partial<Schedule>
-  ) => {
-    return new Promise<ScheduleWithId>((resolve, reject) => {
-      mongoose
-        .connect(process.env.DATABASE_URL as string)
-        .then(async () => {
-          try {
-            const updatedUser = await ScheduleModel.findByIdAndUpdate(
-              id,
-              updatedUserData,
-              { new: true }
-            )
-            if (!updatedUser) {
-              reject('User not found')
-            }
-            resolve(updatedUser as ScheduleWithId)
-          } catch (err) {
-            reject(err)
-          }
-        })
-        .catch(err => {
-          reject(err)
-        })
-    })
-  }
-
-  deleteSchedule = (id: mongoose.Types.ObjectId) => {
-    return new Promise<void>(async (resolve, reject) => {
-      mongoose.connect(process.env.DATABASE_URL as string).then(async () => {
-        await ScheduleModel.findByIdAndDelete(id)
-          .exec()
-          .catch(err => {
-            if (err) {
-              reject(err)
-            }
-          })
-        resolve()
-      })
-    })
   }
 
 
