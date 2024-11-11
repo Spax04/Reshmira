@@ -26,6 +26,7 @@ export const ScheduleController = (router: any) => {
   router.post('/schedule/create', bodyParser(), createSchedule);
   router.get('/schedule/:id', bodyParser(), getScheduleById)
   router.delete("/schedule/:scheduleId/:roomId", bodyParser(), deleteSchedule)
+  router.post("/schedule/extend", bodyParser(), extendSchedule)
 };
 
 export async function getScheduleById(ctx: any): Promise<any> {
@@ -95,8 +96,7 @@ export async function createSchedule(ctx: any): Promise<any> {
       return hours * 3600 + minutes * 60;
     };
 
-    // Ensure shiftTime is a string, then convert to seconds
-    const shiftTimeString = typeof shiftTime === 'string' ? shiftTime : shiftTime.toString(); // Convert shiftTime to string if necessary
+    const shiftTimeString = typeof shiftTime === 'string' ? shiftTime : shiftTime.toString(); 
 
     const shiftTimeInSeconds = timeToSeconds(shiftTimeString);
     const newSchedule: Partial<Schedule> = {
@@ -204,7 +204,7 @@ export async function deleteSchedule(ctx: any): Promise<any> {
     const { success: deleteRoomByIdSuccess, msg: deleteRoomByIdMsg } = await new RoomService().deleteRoom(roomId)
 
     if (!deleteRoomByIdSuccess) {
-      
+
       ctx.body = JSON.stringify({
         success: false,
         msg: deleteRoomByIdMsg
@@ -212,7 +212,7 @@ export async function deleteSchedule(ctx: any): Promise<any> {
       ctx.status = 400;
     }
 
-    
+
     ctx.body = JSON.stringify({
       success: true,
       msg: "Schedule was deleted Successfully!"
@@ -229,4 +229,91 @@ export async function deleteSchedule(ctx: any): Promise<any> {
   }
 }
 
+interface ExtendScheduleRequestBody {
+  scheduleId: string;
+  extendDays: number;
+}
+
+export async function extendSchedule(ctx: any): Promise<any> {
+  try {
+    const { scheduleId, extendDays } = ctx
+      .request.body as ExtendScheduleRequestBody;
+
+    
+
+    // Ensure shiftTime is a string, then convert to seconds
+    const shiftTimeString = typeof shiftTime === 'string' ? shiftTime : shiftTime.toString(); // Convert shiftTime to string if necessary
+
+    const shiftTimeInSeconds = timeToSeconds(shiftTimeString);
+    const newSchedule: Partial<Schedule> = {
+      name: scheduleName,
+      guards: guardsIds,
+      shifts: null,
+      positions: positions.map(p => p.position_name),
+      guards_pre_shift: guardsPreShift,
+      shift_time: shiftTimeInSeconds,
+    };
+
+    console.log("Before creatin schedule");
+    const newScheduleResponse = await new ScheduleDal().createSchedule(
+      newSchedule
+    );
+
+    if (!newScheduleResponse.success) {
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: 'Running into the problem while creating schedule. Try again.',
+      });
+      ctx.status = 500;
+    }
+    console.log("before generating schedule");
+    const fullSchedule = await new ScheduleService().generateNewSchedule(
+      newScheduleResponse.data._id.toString(),
+      guardsPreShift,
+      guardsIds,
+      positions,
+      shiftTimeInSeconds,
+      scheduleStartDate
+    );
+
+
+    const { data: roomResponse } = await new RoomDal().getRoomById(new mongoose.Types.ObjectId(roomId))
+
+    const updatedRoomData: Partial<RoomWithId> = {
+      ...roomResponse,
+      schedule_id: newScheduleResponse.data._id,
+      users: roomResponse.users.map(u => u._id)
+    };
+
+    await new RoomDal().updateRoom(new mongoose.Types.ObjectId(roomId), updatedRoomData)
+
+    console.log("After generating schedule");
+    if (fullSchedule.success) {
+      console.log(fullSchedule);
+      console.log(fullSchedule.data);
+      console.log("Schedule was created successfully!");
+
+      ctx.body = JSON.stringify({
+        success: true,
+        msg: 'New schedule was created successfuly!',
+        data: fullSchedule.data,
+      });
+      ctx.status = 200;
+    } else {
+      ctx.body = JSON.stringify({
+        success: false,
+        msg: 'Error on creating: ' + fullSchedule.msg,
+
+      });
+      ctx.status = 400;
+    }
+  } catch (err) {
+    console.error('Error in Sign In', err);
+    ctx.body = JSON.stringify({
+      success: false,
+      msg: 'Running into the problem while creating schedule. Try again.',
+    });
+    ctx.status = 404;
+  }
+}
 

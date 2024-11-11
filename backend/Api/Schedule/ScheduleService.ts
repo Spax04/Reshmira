@@ -112,5 +112,105 @@ export class ScheduleService {
     }
   }
 
+  extendExistingSchedule = async (scheduleId: mongoose.Types.ObjectId, extendDays: number) => {
+    try {
+
+
+      const { success: scheduleByIdSuccess, data: scheduleByIdData, msg: scheduleByIdMsg } = await new ScheduleDal().getScheduleById(scheduleId)
+
+      if (!scheduleByIdSuccess) {
+        return { success: scheduleByIdSuccess, msg: scheduleByIdMsg }
+      }
+
+      const currentDate = new Date().getTime()
+
+      let { data: shiftsList } = await new ShiftDal().getShiftsList(scheduleByIdData.shifts)
+
+
+      // Be sure that order of shifts is from older to younger
+      shiftsList.sort(function (a, b) {
+
+        return new Date(a.end_time).getTime() - new Date(b.end_time).getTime();
+      })
+
+      shiftsList.filter((s) => new Date(s.end_time).getTime()! < currentDate)
+
+
+      const lastShift = shiftsList[shiftsList.length - 1]
+
+
+
+      console.log("Schedule start current start time");
+      let currentDateEpoch = Math.floor(lastShift.end_time.getTime() / 1000)
+      console.log(currentDateEpoch);
+      let threeDaysSinceStart = Math.floor(
+        (currentDateEpoch + extendDays * 24 * 60 * 60)
+      )
+      const shifts: mongoose.Types.ObjectId[] = []
+      while (currentDateEpoch < threeDaysSinceStart) {
+        const startDate = new Date(currentDateEpoch * 1000)
+        const endDate = new Date((currentDateEpoch + scheduleByIdData.shift_time) * 1000)
+
+        const guardPosts: mongoose.Types.DocumentArray<GuardAssignment> =
+          new mongoose.Types.DocumentArray([])
+
+        for (let i = 0; i < scheduleByIdData.positions.length; i++) {
+          let guardsIds: mongoose.Types.ObjectId[] = []
+
+          for (let j = 0; j < scheduleByIdData.positions[i].guard_pre_position; j++) {
+            let guardId = guards.shift()
+            if (guardId) {
+              guardsIds.push(guardId)
+              guards.push(guardId)
+            }
+          }
+
+          const newGuardPost: GuardAssignment = {
+            guards_id: guardsIds,
+            position_name: positions[i].position_name,
+            guards_pre_position: positions[i].guard_pre_position
+          }
+
+          guardPosts.push(newGuardPost)
+        }
+
+        const newShift: Shift = {
+          start_time: startDate,
+          end_time: endDate,
+          schedule_id: new mongoose.Types.ObjectId(scheduleId),
+          guard_posts: guardPosts
+        }
+
+        const savedShift = await new ShiftDal().createShift(newShift)
+
+        if (!savedShift.success) {
+          throw new Error('Error on saving new shift')
+        }
+
+        shifts.push(savedShift.data._id)
+        currentDateEpoch += shiftTime
+      }
+
+
+
+      const currentScheduleResponse = await new ScheduleDal().getScheduleById(
+        new mongoose.Types.ObjectId(scheduleId)
+      )
+      currentScheduleResponse.data.shifts = [...shifts]
+      const updatedSchedule = await new ScheduleDal().updateSchedule(
+        new mongoose.Types.ObjectId(scheduleId),
+        currentScheduleResponse.data
+      )
+
+      return {
+        success: true,
+        data: updatedSchedule,
+        msg: 'Schedule has been created'
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
 
 }

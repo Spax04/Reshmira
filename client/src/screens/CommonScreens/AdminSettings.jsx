@@ -31,7 +31,7 @@ const AdminSettings = ({ navigation }) => {
 
     useEffect(() => {
         console.log(schedule.users);
-    },[])
+    }, [])
     const dispatch = useDispatch()
 
     const [showExtendModal, setShowExtendModal] = useState(false)
@@ -101,6 +101,9 @@ const AdminSettings = ({ navigation }) => {
     }
     const handleExtendSchedule = async () => {
 
+        setShowExtendModal(false)
+        console.log(extendScheduleDays);
+
     }
 
     const handleRemoveUser = async (userId) => {
@@ -139,6 +142,7 @@ const AdminSettings = ({ navigation }) => {
                             <View style={styles.modalContainer}>
                                 <View style={styles.modalContent}>
                                     <Text style={styles.modalTitle}>Extend Schedule</Text>
+                                    <Text style={styles.modalText}>Shifts that expired will be removed!</Text>
                                     <Text style={styles.modalText}>Choose duration (days):</Text>
                                     <Picker
                                         selectedValue={extendScheduleDays}
@@ -151,12 +155,27 @@ const AdminSettings = ({ navigation }) => {
                                         <Picker.Item label="4" value={4} />
                                         <Picker.Item label="5" value={5} />
                                     </Picker>
-                                    <TouchableOpacity
-                                        style={styles.modalButton}
-                                        onPress={() => setShowExtendModal(false)}
-                                    >
-                                        <Text style={styles.modalButtonText}>Done</Text>
-                                    </TouchableOpacity>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%' }}>
+
+                                        <TouchableOpacity
+                                            style={{
+                                                marginTop: 15,
+                                                backgroundColor: COLORS.greenSubmit,
+                                                paddingVertical: 10,
+                                                paddingHorizontal: 20,
+                                                borderRadius: 8,
+                                            }}
+                                            onPress={() => handleExtendSchedule()}
+                                        >
+                                            <Text style={styles.modalButtonText}>Done</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.modalButton}
+                                            onPress={() => setShowExtendModal(false)}
+                                        >
+                                            <Text style={styles.modalButtonText}>Cancle</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
                         </Modal>
@@ -178,19 +197,28 @@ const AdminSettings = ({ navigation }) => {
                                     <Text style={styles.modalTitle}>Delete Schedule</Text>
                                     <Text style={styles.modalText}>Are you sure you want to delete schedule?</Text>
 
-                                    <TouchableOpacity
-                                        style={styles.deleteButton}
-                                        onPress={() => handleDeleteSchedule()}
-                                    >
-                                        <Text style={styles.buttonText}>Yes, delete schedule</Text>
-                                    </TouchableOpacity>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%' }}>
 
-                                    <TouchableOpacity
-                                        style={styles.modalButton}
-                                        onPress={() => setShowDeleteScheduleModal(false)}
-                                    >
-                                        <Text style={styles.modalButtonText}>Cancle</Text>
-                                    </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={{
+                                                marginTop: 15,
+                                                backgroundColor: COLORS.mainRed,
+                                                paddingVertical: 10,
+                                                paddingHorizontal: 20,
+                                                borderRadius: 8,
+                                            }}
+                                            onPress={() => handleDeleteSchedule()}
+                                        >
+                                            <Text style={styles.buttonText}>Yes</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={styles.modalButton}
+                                            onPress={() => setShowDeleteScheduleModal(false)}
+                                        >
+                                            <Text style={styles.modalButtonText}>Cancle</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
                         </Modal>
@@ -257,7 +285,6 @@ const styles = StyleSheet.create({
     },
     deleteButton: {
         width: "45%",
-        height: 50,
         backgroundColor: COLORS.mainRed,
         justifyContent: "center",
         alignItems: "center",
