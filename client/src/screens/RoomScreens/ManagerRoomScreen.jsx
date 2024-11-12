@@ -83,7 +83,7 @@ const ManagerRoomScreen = ({ navigation }) => {
     if (newPositionName && newGuardPrePosition) {
       const newPosition = {
         position_name: newPositionName,
-        guard_pre_position: parseInt(newGuardPrePosition),
+        guards_pre_position: parseInt(newGuardPrePosition),
       };
 
       setPositionList((prevPositions) => [...prevPositions, newPosition]);
@@ -128,7 +128,7 @@ const ManagerRoomScreen = ({ navigation }) => {
   };
 
   const handleCreateSchedule = async () => {
-    const totalGuardsPreShift = positionList.reduce((total, pos) => total + pos.guard_pre_position, 0);
+    const totalGuardsPreShift = positionList.reduce((total, pos) => total + pos.guards_pre_position, 0);
 
     const formattedShiftTime = shiftTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     let formatedScheduleDate
@@ -332,7 +332,7 @@ const ManagerRoomScreen = ({ navigation }) => {
               <View style={styles.positionDetails}>
                 <Text style={styles.positionName}>{pos.position_name}</Text>
                 <Text style={styles.positionGuards}>
-                  {pos.guard_pre_position} {pos.guard_pre_position > 1 ? 'Guards' : 'Guard'}
+                  {pos.guards_pre_position} {pos.guards_pre_position > 1 ? 'Guards' : 'Guard'}
                 </Text>
               </View>
             </View>

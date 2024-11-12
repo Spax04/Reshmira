@@ -16,7 +16,7 @@ export class ScheduleService {
     scheduleId: string,
     guardsPreShift: number,
     guards: mongoose.Types.ObjectId[],
-    positions: { position_name: string; guard_pre_position: number }[],
+    positions: { position_name: string; guards_pre_position: number }[],
     shiftTime: number,// epoch format (seconds)
     scheduleStartDate: number
   ) => {
@@ -38,7 +38,7 @@ export class ScheduleService {
         for (let i = 0; i < positions.length; i++) {
           let guardsIds: mongoose.Types.ObjectId[] = []
 
-          for (let j = 0; j < positions[i].guard_pre_position; j++) {
+          for (let j = 0; j < positions[i].guards_pre_position; j++) {
             let guardId = guards.shift()
             if (guardId) {
               guardsIds.push(guardId)
@@ -49,7 +49,7 @@ export class ScheduleService {
           const newGuardPost: GuardAssignment = {
             guards_id: guardsIds,
             position_name: positions[i].position_name,
-            guards_pre_position: positions[i].guard_pre_position
+            guards_pre_position: positions[i].guards_pre_position
           }
 
           guardPosts.push(newGuardPost)
@@ -126,27 +126,39 @@ export class ScheduleService {
 
       let { data: shiftsList } = await new ShiftDal().getShiftsList(scheduleByIdData.shifts)
 
-
-      // Be sure that order of shifts is from older to younger
       shiftsList.sort(function (a, b) {
 
         return new Date(a.end_time).getTime() - new Date(b.end_time).getTime();
       })
 
-      shiftsList.filter((s) => new Date(s.end_time).getTime()! < currentDate)
+      // Getting not expired shifts and makin updated shifts array
+      const notExpiredShifts = shiftsList.filter((s) => new Date(s.end_time).getTime()! < currentDate)
+      const updatedScheduleShifts = []
+      notExpiredShifts.forEach(s => updatedScheduleShifts.push(s._id))
+
+      // getting expired shift to delete later
+      const expiredShifts = shiftsList.filter((s) => new Date(s.end_time).getTime()! > currentDate)
+      const expiredScheduleShifts : any = []
+      expiredShifts.forEach(s => expiredScheduleShifts.push(s._id))
 
 
       const lastShift = shiftsList[shiftsList.length - 1]
-
-
-
+     
+      const lastGuardId = lastShift.guard_posts[lastShift.guard_posts.length -1].guards_id[lastShift.guard_posts[lastShift.guard_posts.length -1].guards_id.length -1]
+      // make sorting that first in the list will be last guard that was in shedule
+      while(scheduleByIdData.guards[0]._id !== lastGuardId){
+        let guardId = scheduleByIdData.guards.shift()
+            if (guardId) {
+              scheduleByIdData.guards.push(guardId)
+            }
+      }
+      
       console.log("Schedule start current start time");
       let currentDateEpoch = Math.floor(lastShift.end_time.getTime() / 1000)
       console.log(currentDateEpoch);
       let threeDaysSinceStart = Math.floor(
         (currentDateEpoch + extendDays * 24 * 60 * 60)
       )
-      const shifts: mongoose.Types.ObjectId[] = []
       while (currentDateEpoch < threeDaysSinceStart) {
         const startDate = new Date(currentDateEpoch * 1000)
         const endDate = new Date((currentDateEpoch + scheduleByIdData.shift_time) * 1000)
@@ -157,18 +169,18 @@ export class ScheduleService {
         for (let i = 0; i < scheduleByIdData.positions.length; i++) {
           let guardsIds: mongoose.Types.ObjectId[] = []
 
-          for (let j = 0; j < scheduleByIdData.positions[i].guard_pre_position; j++) {
-            let guardId = guards.shift()
+          for (let j = 0; j < scheduleByIdData.positions[i].guards_pre_position; j++) {
+            let guardId = scheduleByIdData.guards.shift()
             if (guardId) {
               guardsIds.push(guardId)
-              guards.push(guardId)
+              scheduleByIdData.guards.push(guardId)
             }
           }
 
           const newGuardPost: GuardAssignment = {
             guards_id: guardsIds,
-            position_name: positions[i].position_name,
-            guards_pre_position: positions[i].guard_pre_position
+            position_name: scheduleByIdData.positions[i].position_name,
+            guards_pre_position: scheduleByIdData.positions[i].guards_pre_position
           }
 
           guardPosts.push(newGuardPost)
@@ -187,8 +199,8 @@ export class ScheduleService {
           throw new Error('Error on saving new shift')
         }
 
-        shifts.push(savedShift.data._id)
-        currentDateEpoch += shiftTime
+        updatedScheduleShifts.push(savedShift.data._id)
+        currentDateEpoch += scheduleByIdData.shift_time
       }
 
 
@@ -196,11 +208,16 @@ export class ScheduleService {
       const currentScheduleResponse = await new ScheduleDal().getScheduleById(
         new mongoose.Types.ObjectId(scheduleId)
       )
-      currentScheduleResponse.data.shifts = [...shifts]
+
+      currentScheduleResponse.data.shifts = [...updatedScheduleShifts]
+
       const updatedSchedule = await new ScheduleDal().updateSchedule(
         new mongoose.Types.ObjectId(scheduleId),
         currentScheduleResponse.data
       )
+
+
+      await ShiftModel.deleteMany({ _id: { $in: expiredScheduleShifts } })
 
       return {
         success: true,
@@ -208,7 +225,10 @@ export class ScheduleService {
         msg: 'Schedule has been created'
       }
     } catch (error) {
-      throw error
+      return {
+        success: false,
+        msg: error
+      }
     }
   }
 

@@ -4,7 +4,7 @@ import { ScheduleService } from './ScheduleService';
 import * as bcrypt from 'bcryptjs';
 import { User, UserWithId } from '../../db/models/user';
 import * as jwt from 'jsonwebtoken';
-import { Schedule } from '../../db/models/schedule';
+import { Schedule, ScheduleModel } from '../../db/models/schedule';
 import mongoose, { mongo } from 'mongoose';
 import { ScheduleDal } from '../../dal/ScheduleDal';
 import { RoomDal } from '../../dal/RoomDal';
@@ -15,7 +15,7 @@ import { RoomService } from '../Room/RoomService';
 interface CreateScheduleRequestBody {
   scheduleName: string;
   guards: { _id: mongoose.Types.ObjectId, fullName: string }[];
-  positions: { position_name: string; guard_pre_position: number }[];
+  positions: { position_name: string; guards_pre_position: number }[];
   shiftTime: number; // epoch format (seconds)
   guardsPreShift: number;
   roomId: string;
@@ -99,14 +99,14 @@ export async function createSchedule(ctx: any): Promise<any> {
     const shiftTimeString = typeof shiftTime === 'string' ? shiftTime : shiftTime.toString(); 
 
     const shiftTimeInSeconds = timeToSeconds(shiftTimeString);
-    const newSchedule: Partial<Schedule> = {
+    const newSchedule = new ScheduleModel({
       name: scheduleName,
-      guards: guardsIds,
-      shifts: null,
-      positions: positions.map(p => p.position_name),
+      guards: guards,
+      positions: positions, 
       guards_pre_shift: guardsPreShift,
       shift_time: shiftTimeInSeconds,
-    };
+      suspend_guards: [],
+    });
 
     console.log("Before creatin schedule");
     const newScheduleResponse = await new ScheduleDal().createSchedule(
@@ -239,70 +239,22 @@ export async function extendSchedule(ctx: any): Promise<any> {
     const { scheduleId, extendDays } = ctx
       .request.body as ExtendScheduleRequestBody;
 
+      const {success: extendScheduleSuccess,msg: extendScheduleMsg} = await new ScheduleService()
+      .extendExistingSchedule(new mongoose.Types.ObjectId(scheduleId),extendDays)
     
-
-    // Ensure shiftTime is a string, then convert to seconds
-    const shiftTimeString = typeof shiftTime === 'string' ? shiftTime : shiftTime.toString(); // Convert shiftTime to string if necessary
-
-    const shiftTimeInSeconds = timeToSeconds(shiftTimeString);
-    const newSchedule: Partial<Schedule> = {
-      name: scheduleName,
-      guards: guardsIds,
-      shifts: null,
-      positions: positions.map(p => p.position_name),
-      guards_pre_shift: guardsPreShift,
-      shift_time: shiftTimeInSeconds,
-    };
-
-    console.log("Before creatin schedule");
-    const newScheduleResponse = await new ScheduleDal().createSchedule(
-      newSchedule
-    );
-
-    if (!newScheduleResponse.success) {
-      ctx.body = JSON.stringify({
-        success: false,
-        msg: 'Running into the problem while creating schedule. Try again.',
-      });
-      ctx.status = 500;
-    }
-    console.log("before generating schedule");
-    const fullSchedule = await new ScheduleService().generateNewSchedule(
-      newScheduleResponse.data._id.toString(),
-      guardsPreShift,
-      guardsIds,
-      positions,
-      shiftTimeInSeconds,
-      scheduleStartDate
-    );
-
-
-    const { data: roomResponse } = await new RoomDal().getRoomById(new mongoose.Types.ObjectId(roomId))
-
-    const updatedRoomData: Partial<RoomWithId> = {
-      ...roomResponse,
-      schedule_id: newScheduleResponse.data._id,
-      users: roomResponse.users.map(u => u._id)
-    };
-
-    await new RoomDal().updateRoom(new mongoose.Types.ObjectId(roomId), updatedRoomData)
-
-    console.log("After generating schedule");
-    if (fullSchedule.success) {
-      console.log(fullSchedule);
-      console.log(fullSchedule.data);
+    if (extendScheduleSuccess) {
+     
       console.log("Schedule was created successfully!");
 
       ctx.body = JSON.stringify({
         success: true,
-        msg: 'New schedule was created successfuly!',
-        data: fullSchedule.data,
+        msg: 'Schedule was extended successfuly!',
       });
       ctx.status = 200;
     } else {
       ctx.body = JSON.stringify({
         success: false,
-        msg: 'Error on creating: ' + fullSchedule.msg,
+        msg: 'Error on extending: ' + extendScheduleMsg,
 
       });
       ctx.status = 400;
@@ -311,7 +263,7 @@ export async function extendSchedule(ctx: any): Promise<any> {
     console.error('Error in Sign In', err);
     ctx.body = JSON.stringify({
       success: false,
-      msg: 'Running into the problem while creating schedule. Try again.',
+      msg: 'Running into the problem while extending schedule. Try again.',
     });
     ctx.status = 404;
   }
