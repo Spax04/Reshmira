@@ -33,6 +33,9 @@ const ManagerRoomScreen = ({ navigation }) => {
   const room = useSelector((state) => state.room);
   const user = useSelector((state) => state.user);
   const [loading, setLoading] = useState(false)
+  const [isScheduleAccordionOpen, setIsScheduleAccordionOpen] = useState(false);
+  const [isPositionsAccordionOpen, setIsPositionsAccordionOpen] = useState(false);
+
   const dispatch = useDispatch();
 
   const copyToClipboard = async () => {
@@ -405,11 +408,12 @@ const ManagerRoomScreen = ({ navigation }) => {
 
 
   const onScheduleSettingsOpen = () => {
-
+    setIsScheduleAccordionOpen(!isScheduleAccordionOpen);
     scheduleSettingsOpen.value = !scheduleSettingsOpen.value
     console.log(scheduleSettingsOpen);
   }
   const onPositionSettingsOpen = () => {
+    setIsPositionsAccordionOpen(!isPositionsAccordionOpen)
     positionsSettingsOpen.value = !positionsSettingsOpen.value
   }
 
@@ -444,8 +448,13 @@ const ManagerRoomScreen = ({ navigation }) => {
             <View >
               <TouchableOpacity style={[
                 styles.accordionScheduleButton,
+                isScheduleAccordionOpen && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }
               ]} onPress={() => onScheduleSettingsOpen()}>
+                <View style={styles.accordionButtonContainer}>
                 <Text style={styles.deleteButtonText}>Schedule settings</Text>
+                {isScheduleAccordionOpen? <AntDesign name="up" size={24} color={COLORS.whiteText} /> : <AntDesign name="down" size={24} color={COLORS.whiteText} />}
+
+                </View>
               </TouchableOpacity>
               <AccordionItem isExpanded={scheduleSettingsOpen} viewKey="AccordionSchedule">
 
@@ -485,13 +494,13 @@ const ManagerRoomScreen = ({ navigation }) => {
                               minuteInterval={15}
                             />
 
+                          </View>
                             <TouchableOpacity
                               style={styles.modalButton}
                               onPress={closeShiftTimeModal}
                             >
                               <Text style={styles.modalButtonText}>Done</Text>
                             </TouchableOpacity>
-                          </View>
 
                         </View>
                       )}
@@ -600,8 +609,12 @@ const ManagerRoomScreen = ({ navigation }) => {
               </AccordionItem>
               <View>
 
-                <TouchableOpacity style={styles.accordionScheduleButton} onPress={onPositionSettingsOpen}>
+                <TouchableOpacity style={[styles.accordionScheduleButton, isPositionsAccordionOpen && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]} onPress={onPositionSettingsOpen}>
+                 <View style={styles.accordionButtonContainer}>
                   <Text style={styles.deleteButtonText}>Positions settings</Text>
+                  {isPositionsAccordionOpen? <AntDesign name="up" size={24} color={COLORS.whiteText} /> : <AntDesign name="down" size={24} color={COLORS.whiteText} />}
+
+                 </View>
                 </TouchableOpacity>
                 <AccordionItem isExpanded={positionsSettingsOpen} viewKey="AccordionPositions">
                   <View style={styles.settingsContainer}>
@@ -688,9 +701,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 25,
-    marginLeft: 35,
-    marginRight: 35,
+    marginLeft: 15,
+    marginRight: 15,
   },
   pickerContainer: {
     marginBottom: 20,
@@ -789,16 +801,17 @@ const styles = StyleSheet.create({
   },
   userInfoContainer: {
     display: "flex",
-    flexDirection: "row", // Arrange children in a row
-    alignItems: "center", // Center items vertically
-    justifyContent: "space-between", // Distribute space evenly
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "space-between", 
   },
   flatList: {
     width: "100%"
   },
   settingsContainer: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius:10,
     width: "100%",
     padding: 15
     // Light background for better contrast
@@ -856,10 +869,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
+    justifyContent:'center',
+    alignItems:'center'
   },
   modalButton: {
+    width:100,
     marginTop: 20,
-    backgroundColor: COLORS.mainOrange, // Brighter color for the modal button
+    backgroundColor: COLORS.mainOrange,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
@@ -926,4 +942,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     marginTop: 15
   },
+  accordionButtonContainer:{
+    flex:1,
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'space-around',
+    width:"100%"
+  }
 });

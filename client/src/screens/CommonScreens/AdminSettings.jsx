@@ -21,6 +21,7 @@ import LoadingComponent from '../../components/Utils/LoadingComponent';
 import { removeRoom } from '../../store/reducers/roomReducer';
 import { removeSchedule } from '../../store/reducers/scheduleReducer';
 import { removeUsersRoomId } from '../../store/reducers/userReducer';
+import { setSchedule,setShiftsList } from '../../store/reducers/scheduleReducer';
 
 const AdminSettings = ({ navigation }) => {
     const guardsOpen = useSharedValue(false);
@@ -102,7 +103,50 @@ const AdminSettings = ({ navigation }) => {
     const handleExtendSchedule = async () => {
 
         setShowExtendModal(false)
-        console.log(extendScheduleDays);
+        setLoading(true)
+        try{
+
+            const {data: response} = await api.post(`${VARS.API_URL}/schedule/extend`,
+                {
+                    scheduleId: schedule._id,
+                    extendDays: extendScheduleDays
+                }
+            )
+
+            if(response.success){
+                toast.show(response.msg, {
+                    type: "success",
+                    placement: "bottom",
+                    duration: 4000,
+                    offset: 30,
+                    animationType: "slide-in",
+                });
+                const { data: scheduleResponse } = await api.get(`${VARS.API_URL}/schedule/${room.scheduleId}`)
+                console.log(scheduleResponse)
+                if (scheduleResponse.success) {
+                    console.log("SHEDULE RESPONSE:")
+                    console.log(scheduleResponse.data);
+
+                    const { data: shiftResponse } = await api.post(`${VARS.API_URL}/shift/get-list/`, { shiftsIds: scheduleResponse.data.shifts })
+                    scheduleResponse.data.shifts = []
+                    dispatch(setSchedule(scheduleResponse.data))
+                    console.log(shiftResponse.data);
+                    dispatch(setShiftsList(shiftResponse.data))
+                }
+            }
+        }catch (err){
+            console.error(err.message);
+            toast.show("Error on extending schedule. Try again later!", {
+                type: "danger",
+                placement: "bottom",
+                duration: 4000,
+                offset: 30,
+                animationType: "slide-in",
+            });
+            
+        }finally{
+            setLoading(false)
+        }
 
     }
 

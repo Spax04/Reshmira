@@ -65,9 +65,7 @@ const DrawerNavigator = () => {
   const room = useSelector(state => state.room)
   const dispatch = useDispatch()
   useEffect(() => {
-    console.log("shedule id in room: " + room.scheduleId);
-    console.log("shedule id: " + schedule._id);
-    console.log("room id in user: " + user.room_id)
+    
 
     getSchedule = async () => {
 
