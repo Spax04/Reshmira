@@ -21,11 +21,10 @@ const ButtomTabNavigator = () => {
           if (route.name === ROUTES.CALENDAR_SHIFTS) {
             icon = focused ? 'calendar-month' : 'calendar-month-outline'
           } else if (route.name === ROUTES.GROUP_SHIFTS) {
-            icon = focused ? 'calendar-clock' : 'calendar-clock-outline'
+            icon = focused ? 'clipboard-list' : 'clipboard-list-outline'
           } else if (route.name === ROUTES.USER_SHIFTS) {
             icon = focused ? 'calendar-account' : 'calendar-account-outline'
           }
-
           return <MaterialCommunityIcons name={icon} size={38} color={color} />
         }
       })}

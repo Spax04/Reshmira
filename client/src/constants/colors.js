@@ -9,5 +9,6 @@ export default {
    neutralLight: "#D3D3D3",
    neutralGray: "#A9A9A9",
    neutralDark: "#555",
-   mainBlue: "#3498db"
+   mainBlue: "#3498db",
+   neutralCustom: "#B3D4FF"
 }

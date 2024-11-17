@@ -11,8 +11,6 @@ const ShiftComponent = ({ date, startTime, endTime, positions, navigation }) => 
     });
   };
 
-  useEffect(()=>{console.log("POSITIONS"+{positions});},[])
-
   return (
     <View style={styles.container}>
       <Text style={styles.dateText}>{date}</Text>
@@ -57,11 +55,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 4,
-    color: '#555'
+    color: '#555',textAlign: 'right',
   },
   timeText: {
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: 'bold',textAlign: 'right',
   },
   positionText: {
     fontSize: 14,
@@ -71,10 +69,12 @@ const styles = StyleSheet.create({
   },
   positionContainer: {
     marginVertical: 5,
+    alignItems:'flex-end'
   },
   userContainer: {
     flexDirection: 'row',
     marginTop: 4,
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    
   }
 });

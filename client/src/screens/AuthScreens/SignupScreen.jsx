@@ -6,9 +6,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  ActivityIndicator,Keyboard // Import Image component from react-native
+  ActivityIndicator,
+  Keyboard, 
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
-import { COLORS, ROUTES, VARS } from "../../constants";
+import { COLORS, ROUTES, VARS, STYLES } from "../../constants";
 
 // Import your logo image
 import LogoImage from "../../../assets/images/logo.png";
@@ -123,7 +126,8 @@ const SignupScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={STYLES.container}>
       <LoadingComponent isLoading={loading}/>
       <Image source={LogoImage} style={styles.logo} />
       <Text style={styles.title}>Sign Up</Text>
@@ -158,7 +162,7 @@ const SignupScreen = ({ navigation }) => {
         </Text>
       </TouchableOpacity>
       <DeveloperSignature/>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

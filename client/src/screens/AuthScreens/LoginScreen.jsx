@@ -6,11 +6,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  ActivityIndicator, Keyboard
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { useToast } from "react-native-toast-notifications";
 import DeveloperSignature from "../../components/Utils/DeveloperSignature";
-import { COLORS, ROUTES, VARS } from "../../constants";
+import { COLORS, ROUTES, VARS, STYLES } from "../../constants";
 import LogoImage from "../../../assets/images/logo.png";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -175,38 +178,39 @@ const LoginScreen = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={STYLES.container}>
       <Image source={LogoImage} style={styles.logo} />
       <LoadingComponent isLoading={loading} />
 
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>להתחבר</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="דוא''ל"
         onChangeText={(text) => setEmail(text)}
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="סיסמה"
         secureTextEntry
         onChangeText={(text) => setPassword(text)}
       />
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>להתחבר</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={goToSignup}>
         <Text style={styles.signupLink}>
-          Don't have an account? Sign up here
+          אין לך חשבון? הירשם כאן 
         </Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={goToForgotPassword}>
         <Text style={styles.signupLink}>
-          Forgot password?
+          שכחת סיסמה ? 
         </Text>
       </TouchableOpacity>
       <DeveloperSignature />
 
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -236,6 +240,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 10,
     borderRadius: 5,
+    textAlign:'right'
   },
   button: {
     width: "100%",

@@ -501,7 +501,6 @@ const ManagerRoomScreen = ({ navigation }) => {
                             >
                               <Text style={styles.modalButtonText}>Done</Text>
                             </TouchableOpacity>
-
                         </View>
                       )}
                       {Platform.OS === 'android' && (

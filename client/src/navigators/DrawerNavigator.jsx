@@ -1,4 +1,4 @@
-import { View, Text, Button, TouchableOpacity } from 'react-native'
+import { View, Text, Button, TouchableOpacity, Platform } from 'react-native'
 import React, { useEffect } from 'react'
 import {
   createDrawerNavigator,
@@ -6,6 +6,8 @@ import {
   DrawerItemList,
   DrawerItem
 } from '@react-navigation/drawer'
+import Feather from '@expo/vector-icons/Feather';
+
 import { NavigationContainer, useNavigation } from '@react-navigation/native'
 import { COLORS, ROUTES, VARS } from '../constants'
 import ButtomTabNavigator from './ButtomTabNavigator'
@@ -31,16 +33,20 @@ const CustomDrawerContent = props => {
 
   return (
     <DrawerContentScrollView {...props}>
-      <DrawerItemList {...props} />
+      <DrawerItemList {...props} onItemPress={() => navigation.closeDrawer()} />
       <DrawerItem
-        label='Logout'
+        label='להתנתק'
+       
         onPress={() => {
           dispatch(removeUser())
           dispatch(removeRoom())
           dispatch(removeSchedule())
           navigation.navigate(ROUTES.LOGIN) // Navigate to UserProfile with user data
           console.log('Logout pressed')
+          
         }}
+icon={({ focused, color, size }) =><Feather name="log-out" size={24} color="black" />
+}
       />
       <DeveloperSignature />
     </DrawerContentScrollView>
@@ -50,7 +56,17 @@ const CustomDrawerContent = props => {
 const DrawerNavigator = () => {
 
   const navigation = useNavigation()
-
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('drawerItemPress', (e) => {
+      // Prevent default behavior
+      e.preventDefault();
+  
+      // Do something manually
+      // ...
+    });
+  
+    return unsubscribe;
+  }, [navigation]);
   const navigateToAdminSettigns = () => {
     console.log("TRYING REDIRECT");
     try {
@@ -97,14 +113,31 @@ const DrawerNavigator = () => {
   }, [user.room_id])
   return (
     <Drawer.Navigator
-      drawerContent={props => <CustomDrawerContent {...props} />}
-      screenOptions={{
-        headerTitle: `Welcome, ${user.full_name}`,
-        headerStyle: {
-          backgroundColor: COLORS.mainYellowL, // Set your desired background color here
-        },
-        headerTintColor: '#000',
-      }}
+    
+    drawerContent={props => <CustomDrawerContent {...props} />}
+    screenOptions={({ navigation }) => ({
+      headerTitle: `טוב שחזרת, ${user.full_name}`,
+      headerStyle: {
+        backgroundColor: COLORS.mainYellowL, 
+      },
+      drawerPosition:'right',
+      headerTintColor: '#000',
+      drawerHideStatusBarOnOpen: true,
+      drawerStatusBarAnimation: 'front',
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.openDrawer()}>
+          <Feather
+            name="menu"
+            size={24}
+            color="black"
+            style={{ marginRight: 16 }} 
+          />
+        </TouchableOpacity>
+      ),
+      headerTitleAlign: 'center',
+      headerLeft: false,
+    })}
+      
 
     >
       {room.scheduleId !== null ? (
@@ -112,8 +145,8 @@ const DrawerNavigator = () => {
           name={ROUTES.HOME_DRAWER}
           component={ButtomTabNavigator}
           options={{
-            title: 'Main',
-            headerRight: () => (
+            title: 'דף הבית',
+            headerLeft: () => (
               (room.scheduleId !== null && user._id === room.adminId) ?
                 (<TouchableOpacity onPress={navigateToAdminSettigns}
                 >
@@ -125,7 +158,8 @@ const DrawerNavigator = () => {
                     style={{ marginLeft: 15, marginRight: 10 }}
                   />
                 </TouchableOpacity>) : <></>
-            )
+            ),
+            drawerIcon:  ({focused, size}) => (<Feather name="home" size={24} color="black" />)
           }}
         />
       ) : (
@@ -133,7 +167,9 @@ const DrawerNavigator = () => {
           name={ROUTES.ROOM_STACK}
           component={RoomNavigator}
           options={{
-            title: 'Room menu'
+            title: 'דף החדר',
+            drawerIcon:  ({focused, size}) => (<Feather name="users" size={24} color="black" />)
+            
           }}
         />
       )}
@@ -141,18 +177,11 @@ const DrawerNavigator = () => {
         name={ROUTES.SETTINGS}
         component={Settings}
         options={{
-          title: 'Settings'
+          title: 'הגדרות',
+          drawerIcon:  ({focused, size}) => (<Feather name="settings" size={24} color="black" />)
         }}
       />
-      {/* {(room.scheduleId !== null && user._id === room.adminId) ?
-        <Drawer.Screen
-          name={ROUTES.ADMIN_SETTINGS}
-          component={AdminSettings}
-          options={{
-            title: 'Admin Settings',
-
-          }}
-        /> : <></>} */}
+     
     </Drawer.Navigator>
   )
 }

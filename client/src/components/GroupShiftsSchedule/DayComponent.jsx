@@ -11,7 +11,7 @@ const DayComponent = ({ date, shifts, navigation }) => {
           key={index}
           startTime={shift.startTime}
           endTime={shift.endTime}
-          positions={shift.positions} // Pass guard posts directly here
+          positions={shift.positions}
           date={date}
           navigation={navigation} 
         />
@@ -30,5 +30,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+    textAlign: 'right'
   },
 });

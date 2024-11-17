@@ -1,20 +1,19 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 
-// LoadingIndicator component to show loading.gif
 const LoadingComponent = ({ isLoading }) => {
     if (!isLoading) {
-        return null; // Do not render anything if not loading
+        return null; 
     }
 
     return (
         <View style={styles.overlay}>
             <View style={styles.loadingContainer}>
                 <Image
-                    source={require('../../../assets/loading.gif')} // Path to your loading.gif
+                    source={require('../../../assets/loading.gif')} 
                     style={styles.loadingImage}
                 />
-                <Text style={styles.loadingText}>Loading...</Text>
+                <Text style={styles.loadingText}>טוען, נא המתן רגע...</Text>
             </View>
         </View>
     );

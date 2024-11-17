@@ -6,10 +6,10 @@ import {
     TouchableOpacity,
     StyleSheet,
     ActivityIndicator,
-    Image,
+    Image,KeyboardAvoidingView,Platform
 } from "react-native";
 import { useToast } from "react-native-toast-notifications";
-import { COLORS, ROUTES, VARS } from "../../../constants";
+import { COLORS, ROUTES, STYLES, VARS } from "../../../constants";
 import LogoImage from "../../../../assets/images/logo.png";
 import api from "../../../utils/requstInterceptor";
 
@@ -72,7 +72,9 @@ const VerificationEmailScreen = ({ route, navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={STYLES.container}>
+       
             <Image source={LogoImage} style={styles.logo} />
             <ActivityIndicator animating={loading} size="large" />
 
@@ -90,17 +92,12 @@ const VerificationEmailScreen = ({ route, navigation }) => {
             <TouchableOpacity onPress={() => navigation.navigate(ROUTES.LOGIN)}>
                 <Text style={styles.loginLink}>Back to Login</Text>
             </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: 40,
-    },
+    
     logo: {
         width: 250,
         height: 250,
