@@ -29,9 +29,32 @@ const ButtomTabNavigator = () => {
         }
       })}
     >
-      <Tab.Screen name={ROUTES.CALENDAR_SHIFTS} component={CalendarShifts} />
-      <Tab.Screen name={ROUTES.USER_SHIFTS} component={UsersShifts} />
-      <Tab.Screen name={ROUTES.GROUP_SHIFTS} component={GroupShifts} />
+      <Tab.Screen 
+        options={
+          {
+            title:'לו"ז',
+            tabBarShowLabel:true,
+            tabBarLabelStyle: styles.tabBarLabelStyle
+          }
+        }
+        name={ROUTES.CALENDAR_SHIFTS} component={CalendarShifts} />
+      <Tab.Screen
+       options={
+          {
+            title:'שמירות',
+            tabBarShowLabel:true,
+            tabBarLabelStyle: styles.tabBarLabelStyle
+          }
+        } 
+        name={ROUTES.USER_SHIFTS} component={UsersShifts} />
+      <Tab.Screen options={
+          {
+            title:'תקנים',
+            tabBarShowLabel:true,
+            tabBarLabelStyle: styles.tabBarLabelStyle
+          }
+        }  
+        name={ROUTES.GROUP_SHIFTS} component={GroupShifts} />
     </Tab.Navigator>
   )
 }
@@ -43,5 +66,9 @@ const styles = StyleSheet.create({
     height: 80, // Adjust height here
     paddingBottom: 10 // Optional: add padding
   },
-  tabBarItemStyle: {}
+  tabBarItemStyle: {},
+  tabBarLabelStyle:{
+    fontSize: 16,
+    fontWeight: 300,
+  }
 })

@@ -114,39 +114,55 @@ export class ScheduleService {
 
   extendExistingSchedule = async (scheduleId: mongoose.Types.ObjectId, extendDays: number) => {
     try {
-
-
       const { success: scheduleByIdSuccess, data: scheduleByIdData, msg: scheduleByIdMsg } = await new ScheduleDal().getScheduleById(scheduleId)
 
       if (!scheduleByIdSuccess) {
         return { success: scheduleByIdSuccess, msg: scheduleByIdMsg }
       }
 
+      console.log("Goted schedule by id:");
+      console.log(scheduleByIdData);
       const currentDate = new Date().getTime()
 
       let { data: shiftsList } = await new ShiftDal().getShiftsList(scheduleByIdData.shifts)
 
+      console.log("shift lists");
+      console.log(shiftsList);
       shiftsList.sort(function (a, b) {
 
         return new Date(a.end_time).getTime() - new Date(b.end_time).getTime();
       })
 
-      // Getting not expired shifts and makin updated shifts array
-      const notExpiredShifts = shiftsList.filter((s) => new Date(s.end_time).getTime()! < currentDate)
-      const updatedScheduleShifts = []
+      console.log("shift lists after sort");
+      console.log(shiftsList);
+      // Getting not expired shifts and making updated shifts array
+      const notExpiredShifts = shiftsList.filter((s) => new Date(s.end_time).getTime() >= currentDate)
+      const updatedScheduleShifts: any = []
       notExpiredShifts.forEach(s => updatedScheduleShifts.push(s._id))
 
+      console.log("Not expired shifts");
+      console.log(updatedScheduleShifts);
+
       // getting expired shift to delete later
-      const expiredShifts = shiftsList.filter((s) => new Date(s.end_time).getTime()! > currentDate)
+      const expiredShifts = shiftsList.filter((s) => new Date(s.end_time).getTime() <= currentDate)
       const expiredScheduleShifts : any = []
       expiredShifts.forEach(s => expiredScheduleShifts.push(s._id))
 
+      console.log("Expired shifts");
+      console.log(expiredScheduleShifts);
 
       const lastShift = shiftsList[shiftsList.length - 1]
      
+      console.log("last shift");
+      console.log(lastShift);
       const lastGuardId = lastShift.guard_posts[lastShift.guard_posts.length -1].guards_id[lastShift.guard_posts[lastShift.guard_posts.length -1].guards_id.length -1]
       // make sorting that first in the list will be last guard that was in shedule
-      while(scheduleByIdData.guards[0]._id !== lastGuardId){
+      console.log("last guard id");
+      console.log(lastGuardId);
+      while(scheduleByIdData.guards[0]._id.equals(lastGuardId)){
+        console.log("last guard id");
+        console.log(lastGuardId);
+        console.log(scheduleByIdData.guards[0]._id);
         let guardId = scheduleByIdData.guards.shift()
             if (guardId) {
               scheduleByIdData.guards.push(guardId)
@@ -154,7 +170,9 @@ export class ScheduleService {
       }
       
       console.log("Schedule start current start time");
-      let currentDateEpoch = Math.floor(lastShift.end_time.getTime() / 1000)
+      let currentDateEpoch = notExpiredShifts.length > 0 ?Math.floor(lastShift.end_time.getTime() / 1000) : currentDate / 1000
+
+      
       console.log(currentDateEpoch);
       let threeDaysSinceStart = Math.floor(
         (currentDateEpoch + extendDays * 24 * 60 * 60)

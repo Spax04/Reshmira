@@ -239,12 +239,13 @@ export async function extendSchedule(ctx: any): Promise<any> {
     const { scheduleId, extendDays } = ctx
       .request.body as ExtendScheduleRequestBody;
 
+      console.log("Before extending");
       const {success: extendScheduleSuccess,msg: extendScheduleMsg} = await new ScheduleService()
       .extendExistingSchedule(new mongoose.Types.ObjectId(scheduleId),extendDays)
     
     if (extendScheduleSuccess) {
      
-      console.log("Schedule was created successfully!");
+      console.log("Schedule was extended successfully!");
 
       ctx.body = JSON.stringify({
         success: true,
