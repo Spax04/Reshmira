@@ -7,12 +7,18 @@ import LoadingComponent from '../../components/Utils/LoadingComponent';
 import 'moment/locale/he';
 import CButton from '../../components/common/CButton';
 import { COMMON } from '../../constants';
+import EmptyList from '../../components/Utils/EmptyList';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const UsersShifts = ({ navigation }) => {
   const schedule = useSelector((state) => state.schedule);
   const user = useSelector((state) => state.user);
   const [userShiftsByDay, setUserShiftsByDay] = useState({});
   const [loading, setLoading] = useState(true);
+  const [isAllShiftsPressed,setIsAllShiftsPressed] = useState(false)
+  const [isUsersShiftsPressed,setIsUsersShiftsPressed] = useState(false)
+  const [isChangeView,setIsChangeView] = useState(false)
+
 
 
   const formateShifts = ( shifts)=>{
@@ -45,10 +51,14 @@ const UsersShifts = ({ navigation }) => {
   }
   
   const handleAllShifts = ()=>{
+    setIsAllShiftsPressed(true)
+    setIsUsersShiftsPressed(false)
     formateShifts(schedule.shifts)
   }
 
   const handleUsersShifts = () =>{
+    setIsAllShiftsPressed(false)
+    setIsUsersShiftsPressed(true)
     const filteredShifts = schedule.shifts.filter((shift) =>
       shift.guard_posts.some((post) =>
         post.guards.some((guardId) => guardId._id.toString() === user._id.toString())
@@ -57,9 +67,13 @@ const UsersShifts = ({ navigation }) => {
     formateShifts(filteredShifts)
   }
 
+  const handleChangeSheduleView = () =>{
+   setIsChangeView(!isChangeView)
+  }
+
   useEffect(() => {
     if (schedule.shifts && user._id) {
-     
+      handleUsersShifts()
     }
      
   }, [schedule.shifts, user._id]);
@@ -73,24 +87,33 @@ const UsersShifts = ({ navigation }) => {
   }, [schedule.shifts])
   return (
     <View style={styles.container}>
-      <LoadingComponent isLoading={loading} />
+      {loading?  <LoadingComponent isLoading={loading} />
+:   ( <FlatList
+  style={styles.fletList}
+  data={Object.entries(userShiftsByDay)}
+  showsVerticalScrollIndicator={false}
+    keyExtractor={(item, index) => index.toString()}
+    ListHeaderComponent={
+      <View style={{flex:1,flexDirection:'row', justifyContent:'flex-end'}}>
+        <View>
+        <CButton onPress={handleChangeSheduleView} type={COMMON.BTN_TYPES.INFO} icon={<MaterialCommunityIcons name="table-large" size={22} color="black" />} isPressed={isChangeView}/>
 
-        <FlatList
-        data={Object.entries(userShiftsByDay)}
-        showsVerticalScrollIndicator={false}
-          keyExtractor={(item, index) => index.toString()}
-          ListHeaderComponent={
-            <View style={{flex:1,flexDirection:'row', justifyContent:'flex-end'}}>
-            <CButton onPress={handleUsersShifts} content={"שמירות שלי"} />
-            <CButton onPress={handleAllShifts} content={"כל השמירות"} />
-           </View>
-          }
-          renderItem={({ item: [date, shifts] }) => (
-            <DayComponent key={date} date={date} shifts={shifts} navigation={navigation} />
-          )}
-          ListEmptyComponent={<Text>אין שמירות כרגע</Text>}
-        />
-        
+          </View>
+        <View style={{flex:1,flexDirection:'row', justifyContent:'flex-end'}}>
+
+          <CButton onPress={handleUsersShifts} content={"שמירות שלי"} isPressed={isUsersShiftsPressed}/>
+          <CButton onPress={handleAllShifts} content={"כל השמירות"} isPressed={isAllShiftsPressed}/>
+        </View>
+     </View>
+    }
+    renderItem={({ item: [date, shifts] }) => (
+      <DayComponent key={date} date={date} shifts={shifts} navigation={navigation} isTableView={isChangeView} />
+    )}
+    ListEmptyComponent={<EmptyList/>}
+  />)
+  }
+     
+     
     </View>
   );
 };
@@ -101,6 +124,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: '#fff',
+    height:"100%"
   },
   headerText: {
     fontSize: 20,
@@ -112,5 +136,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-  },
+  },fletList:{
+    height:"auto"
+  }
 });

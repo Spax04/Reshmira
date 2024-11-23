@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice } from "@reduxjs/toolkit";
+import * as SecureStore from 'expo-secure-store';
 
 const initialState = {
   token: "",
@@ -36,16 +37,16 @@ export const userSlice = createSlice({
       // Store user data in AsyncStorage
       const saveData = async ()=>{
 
-        await AsyncStorage.setItem("user", JSON.stringify(user))
-          .then(() => console.log("User stored in AsyncStorage"))
+        await SecureStore.setItemAsync("user", JSON.stringify(user))
+          .then(() => console.log("User stored in SecureStore"))
           .catch((error) => console.error("Error storing user:", error));
       }
       saveData()
     },
     setUserToken:  (state, action) => {
       state.token = action.payload;
-       AsyncStorage.setItem("token", JSON.stringify(action.payload))
-        .then(() => console.log("Token stored in AsyncStorage"))
+      SecureStore.setItemAsync("token", JSON.stringify(action.payload))
+        .then(() => console.log("Token stored in SecureStore"))
         .catch((error) => console.error("Error storing token:", error));
     },
     removeUser:  (state) => {
@@ -55,11 +56,21 @@ export const userSlice = createSlice({
       state.role = "none";
       state.room_id = null;
       state.shifts = [];
-      // Remove user data from AsyncStorage
-       AsyncStorage.removeItem("user")
-        .then(() => console.log("User removed from AsyncStorage"))
-        .catch((error) => console.error("Error removing user:", error));
-       AsyncStorage.clear()
+      const deleteUser = async ()=>{
+
+        await SecureStore.deleteItemAsync("user")
+          .then(() => console.log("User removed from SecureStore"))
+          .catch((error) => console.error("Error removing user:", error));
+      }
+      const deleteToken = async ()=>{
+
+        await SecureStore.deleteItemAsync("token")
+          .then(() => console.log("Token removed from SecureStore"))
+          .catch((error) => console.error("Error removing user:", error));
+      }
+      deleteUser()
+      deleteToken()
+      AsyncStorage.clear()
     },
     removeUsersRoomId: (state) => {
       state.room_id = null;

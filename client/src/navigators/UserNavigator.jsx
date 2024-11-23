@@ -14,7 +14,7 @@ const UserNavigator = () => {
       }}
     >
       <Stack.Screen options={{title: "User settings"}} name={ROUTES.USER_PROFILE} component={UserProfile} />
-      <Stack.Screen options={{title: "Schedule settings"}} name={ROUTES.ADMIN_SETTINGS} component={AdminSettings}/>
+      <Stack.Screen options={{title: "הגדרות של לו''ז"}} name={ROUTES.ADMIN_SETTINGS} component={AdminSettings}/>
     </Stack.Navigator>
   )
 }

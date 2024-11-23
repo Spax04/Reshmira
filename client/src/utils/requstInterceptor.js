@@ -5,6 +5,7 @@ import store from "../store";
 import { removeUser, setUserToken } from "../store/reducers/userReducer";
 import { navigate } from "./navigationService"; // Custom navigation service for redirecting to login
 import { removeRoom } from "../store/reducers/roomReducer";
+import * as SecureStore from 'expo-secure-store';
 
 // Create an Axios instance
 const api = axios.create({
@@ -14,7 +15,7 @@ const api = axios.create({
 // Function to get the access token from storage
 const getAccessToken = async () => {
   try {
-      let token = await AsyncStorage.getItem("token");
+      let token = await SecureStore.getItemAsync("token");
       token = token.replace(/"/g, "");
     return token.toString();
   } catch (e) {
@@ -42,12 +43,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   async (response) => {
     // If the response contains a new token, update storage
-    const newToken = response.headers["authorization"]?.split(" ")[1]; // Assuming the token is returned in the 'Authorization' header
+    const newToken = response.headers["authorization"]?.split(" ")[1]; 
     const currentToken = await getAccessToken();
 
     if (newToken && newToken !== currentToken) {
       // Update the token in AsyncStorage
-      await AsyncStorage.setItem("token", newToken);
+      await SecureStore.setItemAsync("token", newToken);
       store.dispatch(setUserToken(newToken));
       console.log("Access token updated.");
     }
@@ -59,15 +60,10 @@ api.interceptors.response.use(
       console.log("Token expired or invalid. Redirecting to login.");
 
       // Clear AsyncStorage and Redux state
-      await AsyncStorage.removeItem("token"); // Remove token from storage
-      await AsyncStorage.removeItem("user"); // Remove token from storage
-      await AsyncStorage.removeItem("room"); // Remove token from storage
-      await AsyncStorage.clear()
-      store.dispatch(removeUser()); // Dispatch Redux action to clear auth state
+      store.dispatch(removeUser()); 
       store.dispatch(removeRoom());
 
-      // Redirect to login page
-      navigate(ROUTES.LOGIN); // Assuming you're using a navigation service to handle navigation
+      navigate(ROUTES.LOGIN); 
     }
     return Promise.reject(error);
   }

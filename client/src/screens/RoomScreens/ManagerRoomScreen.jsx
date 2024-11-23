@@ -19,7 +19,7 @@ import { setScheduleId } from "../../store/reducers/roomReducer";
 import {
   useSharedValue,
 } from 'react-native-reanimated';
-import AccordionItem from "../../components/Utils/AccordionItem";
+import AccordionItem from "../../components/common/AccordionItem";
 import LoadingComponent from "../../components/Utils/LoadingComponent";
 import * as Clipboard from 'expo-clipboard';
 import Feather from '@expo/vector-icons/Feather';
@@ -70,6 +70,7 @@ const ManagerRoomScreen = ({ navigation }) => {
   const [newGuardPrePosition, setNewGuardPrePosition] = useState("");
 
   useEffect(() => {
+    
     if (user._id === room.adminId && room.adminId !== "") {
       console.log("Correct admin");
 
@@ -379,8 +380,6 @@ const ManagerRoomScreen = ({ navigation }) => {
     setShowScheduleStartDateModal(false);
   };
   const formatTime = (time) => {
-    console.log("TIME");
-    console.log(time);
     return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 

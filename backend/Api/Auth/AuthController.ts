@@ -24,6 +24,8 @@ export async function login(ctx: any): Promise<any> {
     const { email, password } = ctx.request.body
     const { success, msg, data } = await new UserDal().getUserByEmail(email)
 
+    
+    console.log(data);
     if (success) {
       if (!data.confirmed) {
         ctx.body = JSON.stringify({

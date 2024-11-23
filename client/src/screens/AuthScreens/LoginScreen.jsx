@@ -31,29 +31,29 @@ const LoginScreen = ({ navigation }) => {
   const user = useSelector((state) => state.user);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem("user");
-        const storedToken = await AsyncStorage.getItem("token");
+  // useEffect(() => {
+  //   const checkUser = async () => {
+  //     try {
+  //       const storedUser = await AsyncStorage.getItem("user");
+  //       const storedToken = await AsyncStorage.getItem("token");
 
-        console.log("USER ON LOGIN CHECK");
-        console.log(storedUser);
-        if (storedUser && storedToken) {
-          const parsedUser = JSON.parse(storedUser);
-          const parsedToken = JSON.parse(storedToken);
-          if (parsedUser._id && parsedToken) {
-            dispatch(setUser(parsedUser));
-            dispatch(setUserToken(parsedToken));
-            navigation.navigate(ROUTES.HOME);
-          }
-        }
-      } catch (error) {
-        console.error("Error checking stored user:", error);
-      }
-    };
-    checkUser();
-  }, []);
+  //       console.log("USER ON LOGIN CHECK");
+  //       console.log(storedUser);
+  //       if (storedUser && storedToken) {
+  //         const parsedUser = JSON.parse(storedUser);
+  //         const parsedToken = JSON.parse(storedToken);
+  //         if (parsedUser._id && parsedToken) {
+  //           dispatch(setUser(parsedUser));
+  //           dispatch(setUserToken(parsedToken));
+  //           navigation.navigate(ROUTES.HOME);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking stored user:", error);
+  //     }
+  //   };
+  //   checkUser();
+  // }, []);
 
   const handleLogin = async () => {
     Keyboard.dismiss()
@@ -114,11 +114,14 @@ const LoginScreen = ({ navigation }) => {
             dispatch(setUser(userSelfResponse.data));
             console.log(userSelfResponse.data.token);
 
+            console.log("TRYING GET ROOM ON LOGIN");
+            console.log(userSelfResponse);
             if (userSelfResponse.data.room_id !== null) {
               const { data: usersRoomData } = await api.get(
                 `${VARS.API_URL}/room/${userSelfResponse.data.room_id}`
               );
 
+              
               if (usersRoomData.success) {
                 dispatch(setRoom(usersRoomData.data));
               }

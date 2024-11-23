@@ -21,9 +21,7 @@ import { removeRoom } from '../store/reducers/roomReducer'
 import { removeSchedule, setSchedule, setShiftsList } from '../store/reducers/scheduleReducer'
 import api from "../utils/requstInterceptor";
 import DeveloperSignature from '../components/Utils/DeveloperSignature'
-import AdminSettings from '../screens/CommonScreens/AdminSettings'
 import Icon from 'react-native-vector-icons/MaterialIcons' // Import the icon library
-import { navigate } from '../utils/navigationService'
 
 const Drawer = createDrawerNavigator()
 
@@ -57,6 +55,7 @@ const DrawerNavigator = () => {
 
   const navigation = useNavigation()
   useEffect(() => {
+    console.log("t");
     const unsubscribe = navigation.addListener('drawerItemPress', (e) => {
       // Prevent default behavior
       e.preventDefault();
@@ -81,10 +80,12 @@ const DrawerNavigator = () => {
   const room = useSelector(state => state.room)
   const dispatch = useDispatch()
   useEffect(() => {
-    
+    console.log("tt");
 
     getSchedule = async () => {
 
+      console.log("ROOM INIT STATE IN DRAWER");
+      console.log(room);
       if (room.scheduleId !== null && schedule._id === null) {
         console.log("inside!")
         try {
@@ -108,9 +109,7 @@ const DrawerNavigator = () => {
     }
     getSchedule()
   }, [room.scheduleId])
-  useEffect(() => {
-    console.log('user in drawer ' + { ...user })
-  }, [user.room_id])
+ 
   return (
     <Drawer.Navigator
     
@@ -150,7 +149,6 @@ const DrawerNavigator = () => {
               (room.scheduleId !== null && user._id === room.adminId) ?
                 (<TouchableOpacity onPress={navigateToAdminSettigns}
                 >
-
                   <Icon
                     name="admin-panel-settings"
                     size={30}
@@ -197,7 +195,7 @@ const styles = {
   },
   versionText: {
     fontSize: 14,
-    color: '#777', // Light gray for subtle display
+    color: '#777',
   },
 
 };

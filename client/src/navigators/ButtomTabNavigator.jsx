@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { ROUTES } from '../constants'
-import { GroupShifts, UsersShifts, CalendarShifts } from '../screens'
+import { GuardsStandarts, UsersShifts, CalendarShifts } from '../screens'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 const Tab = createBottomTabNavigator()
@@ -23,9 +23,9 @@ const ButtomTabNavigator = () => {
           } else if (route.name === ROUTES.GROUP_SHIFTS) {
             icon = focused ? 'clipboard-list' : 'clipboard-list-outline'
           } else if (route.name === ROUTES.USER_SHIFTS) {
-            icon = focused ? 'calendar-account' : 'calendar-account-outline'
+            icon = focused ? 'clipboard-text-clock' : 'clipboard-text-clock-outline'
           }
-          return <MaterialCommunityIcons name={icon} size={38} color={color} />
+          return <MaterialCommunityIcons name={icon} size={24} color={color} />
         }
       })}
     >
@@ -54,7 +54,7 @@ const ButtomTabNavigator = () => {
             tabBarLabelStyle: styles.tabBarLabelStyle
           }
         }  
-        name={ROUTES.GROUP_SHIFTS} component={GroupShifts} />
+        name={ROUTES.GROUP_SHIFTS} component={GuardsStandarts} />
     </Tab.Navigator>
   )
 }
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   tabBarItemStyle: {},
   tabBarLabelStyle:{
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: 300,
   }
 })

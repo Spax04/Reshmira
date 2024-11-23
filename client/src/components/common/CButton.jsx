@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { COLORS, COMMON } from '../../constants';
 
-const CButton = ({ onPress, content, type }) => {
+const CButton = ({ onPress, content, type, isPressed,icon }) => {
   const [btnColor, setBtnColor] = useState('');
   const [btnTextColor, setBtnTextColor] = useState('');
 
@@ -34,18 +34,30 @@ const CButton = ({ onPress, content, type }) => {
 
   return (
     <TouchableOpacity
-      style={[styles.btn, { backgroundColor: btnColor }]}
+      style={[
+        styles.btn,
+        { backgroundColor: btnColor },
+        isPressed && styles.btnPressed, // Apply pressed styles
+      ]}
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Text style={[styles.btnText, { color: btnTextColor }]}>{content}</Text>
+      <Text
+        style={[
+          styles.btnText,
+          { color: btnTextColor },
+          isPressed && styles.btnTextPressed, // Apply pressed text styles
+        ]}
+      >
+        {icon}{content}
+      </Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   btn: {
-    margin:10,
+    margin: 10,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 5, // Rounded corners
@@ -57,9 +69,17 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5, // Shadow for Android
   },
+  btnPressed: {
+    backgroundColor: '#cccccc', // Lighter color for the pressed state
+    elevation: 2, // Reduce elevation for a "pressed" look
+    transform: [{ scale: 0.90 }], // Slightly shrink the button
+  },
   btnText: {
-    fontWeight: '600', 
-    textTransform: 'uppercase', 
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  btnTextPressed: {
+    color: '#666666', // Slightly darker text when pressed
   },
 });
 

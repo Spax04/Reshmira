@@ -6,7 +6,7 @@ export { default as ResetPasswordScreen } from './AuthScreens/ForgotPassword/Res
 
 //PAY ATTANTION
 export { default as UsersShifts } from './MainScreens/UsersShifts'
-export { default as GroupShifts } from './MainScreens/GroupShifts'
+export { default as GuardsStandarts } from './MainScreens/GuardsStandarts'
 export { default as CalendarShifts } from './MainScreens/CalendarShifts'
 
 export { default as UserProfile } from './CommonScreens/UserProfile'

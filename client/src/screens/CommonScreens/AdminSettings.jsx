@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Platform, ScrollView, Modal } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { COLORS, ROUTES, VARS } from '../../constants'
-import AccordionItem from '../../components/Utils/AccordionItem'
+import AccordionItem from '../../components/common/AccordionItem'
 import Animated, {
     useAnimatedStyle,
     useDerivedValue,
@@ -175,7 +175,7 @@ const AdminSettings = ({ navigation }) => {
                             style={styles.extendButton}
                             onPress={extendOnPress}
                         >
-                            <Text style={styles.buttonText}>Extend Schedule</Text>
+                            <Text style={styles.buttonText}>להאריך רשימה </Text>
                         </TouchableOpacity>
                         <Modal
                             transparent={true}
@@ -185,9 +185,9 @@ const AdminSettings = ({ navigation }) => {
                         >
                             <View style={styles.modalContainer}>
                                 <View style={styles.modalContent}>
-                                    <Text style={styles.modalTitle}>Extend Schedule</Text>
-                                    <Text style={styles.modalText}>Shifts that expired will be removed!</Text>
-                                    <Text style={styles.modalText}>Choose duration (days):</Text>
+                                    <Text style={styles.modalTitle}>להאריך רשימת שמירות</Text>
+                                    <Text style={styles.modalText}>שמירות שפג תוקף ימחקו המרשימה</Text>
+                                    <Text style={styles.modalText}>תבחר כמות הימים:</Text>
                                     <Picker
                                         selectedValue={extendScheduleDays}
                                         style={styles.pickerStyle}
@@ -200,7 +200,12 @@ const AdminSettings = ({ navigation }) => {
                                         <Picker.Item label="5" value={5} />
                                     </Picker>
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%' }}>
-
+                                        <TouchableOpacity
+                                            style={styles.modalButton}
+                                            onPress={() => setShowExtendModal(false)}
+                                        >
+                                            <Text style={styles.modalButtonText}>ביטול</Text>
+                                        </TouchableOpacity>
                                         <TouchableOpacity
                                             style={{
                                                 marginTop: 15,
@@ -211,14 +216,9 @@ const AdminSettings = ({ navigation }) => {
                                             }}
                                             onPress={() => handleExtendSchedule()}
                                         >
-                                            <Text style={styles.modalButtonText}>Done</Text>
+                                            <Text style={styles.modalButtonText}>סיים</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.modalButton}
-                                            onPress={() => setShowExtendModal(false)}
-                                        >
-                                            <Text style={styles.modalButtonText}>Cancle</Text>
-                                        </TouchableOpacity>
+                                      
                                     </View>
                                 </View>
                             </View>
@@ -228,7 +228,7 @@ const AdminSettings = ({ navigation }) => {
                             style={styles.deleteButton}
                             onPress={() => setShowDeleteScheduleModal(true)}
                         >
-                            <Text style={styles.buttonText}>Delete Schedule</Text>
+                            <Text style={styles.buttonText}>למחוק לו"ז</Text>
                         </TouchableOpacity>
                         <Modal
                             transparent={true}
@@ -238,11 +238,17 @@ const AdminSettings = ({ navigation }) => {
                         >
                             <View style={styles.modalContainer}>
                                 <View style={styles.modalContent}>
-                                    <Text style={styles.modalTitle}>Delete Schedule</Text>
-                                    <Text style={styles.modalText}>Are you sure you want to delete schedule?</Text>
+                                    <Text style={styles.modalTitle}>למחוק לו"ז</Text>
+                                    <Text style={styles.modalText}>את\ה בטוח\ה שרוצה למחוק את הרשימה?</Text>
 
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%' }}>
 
+                                    <TouchableOpacity
+                                            style={styles.modalButton}
+                                            onPress={() => setShowDeleteScheduleModal(false)}
+                                        >
+                                            <Text style={styles.modalButtonText}>ביטול</Text>
+                                        </TouchableOpacity>
                                         <TouchableOpacity
                                             style={{
                                                 marginTop: 15,
@@ -253,15 +259,9 @@ const AdminSettings = ({ navigation }) => {
                                             }}
                                             onPress={() => handleDeleteSchedule()}
                                         >
-                                            <Text style={styles.buttonText}>Yes</Text>
+                                            <Text style={styles.buttonText}>כן</Text>
                                         </TouchableOpacity>
 
-                                        <TouchableOpacity
-                                            style={styles.modalButton}
-                                            onPress={() => setShowDeleteScheduleModal(false)}
-                                        >
-                                            <Text style={styles.modalButtonText}>Cancle</Text>
-                                        </TouchableOpacity>
                                     </View>
                                 </View>
                             </View>
@@ -270,7 +270,7 @@ const AdminSettings = ({ navigation }) => {
 
                     {/* User List */}
                     <View style={styles.parent}>
-                        <Text style={styles.nameText}>Guards</Text>
+                        <Text style={styles.nameText}>שומרים</Text>
                         {schedule.users.map(u =>
                             <UserListItem key={u._id} item={u} onDelete={handleRemoveUser} onSuspend={handleRemoveUserTemp} />
                         )}
